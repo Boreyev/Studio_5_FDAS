@@ -13,7 +13,7 @@ int main()
 	string xmlPath = "C:/users/Boreyev/Documents/libraries/opencv/build/etc/haarcascades//haarcascade_frontalface_alt.xml";
 	string referenceImage = "D:/Desktop/bryv/image/newimg/Camera Roll/WIN_20220307_01_06_17_Pro";
 
-	double scale = 1; //Scales frame resolution (higher = lower, 1.0 = default)
+	double scale = 1; //Scales frame resolution (higher = quicker, 1.0 = default)
 
 	//Importing cascade dependencies
 	CascadeClassifier faceCascade;
@@ -38,9 +38,8 @@ int main()
 
 		//Create rectangle vector, Set for detectMultiScale method parameters:
 		//Image matrix, rectangle vect, scale factor, min neighbours, flags, min object size, max object size.
-		//Object size is refers to minimum face size detection (height/width), setting it to 5 allows for face detection at room level.
 		vector<Rect> faceArea;
-		faceCascade.detectMultiScale(grayscale, faceArea, 1.1, 3, 0, Size(5, 5));
+		faceCascade.detectMultiScale(grayscale, faceArea, 1.1, 3, 0, Size(5, 50));
 
 		//For area in faceArea: set colour-range to 255 (grayscale)
 		//Creates rectangle around detected face
