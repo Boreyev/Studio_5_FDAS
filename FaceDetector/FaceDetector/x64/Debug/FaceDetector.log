@@ -1,13 +1,13 @@
 ﻿  main.cpp
-C:\Users\johnil1\Desktop\repos\FaceDetector\FaceDetector\main.cpp(37,93): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
+C:\Users\johnil1\Desktop\Studio_5_FDAS\FaceDetector\FaceDetector\main.cpp(37,93): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
           with
           [
               _Tp=int
           ]
-C:\Users\johnil1\Desktop\repos\FaceDetector\FaceDetector\main.cpp(37,60): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
+C:\Users\johnil1\Desktop\Studio_5_FDAS\FaceDetector\FaceDetector\main.cpp(37,60): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
           with
           [
               _Tp=int
           ]
-C:\Users\johnil1\Desktop\repos\FaceDetector\FaceDetector\main.cpp(41,30): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-  FaceDetector.vcxproj -> C:\Users\johnil1\Desktop\repos\FaceDetector\x64\Debug\FaceDetector.exe
+C:\Users\johnil1\Desktop\Studio_5_FDAS\FaceDetector\FaceDetector\main.cpp(41,30): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  FaceDetector.vcxproj -> C:\Users\johnil1\Desktop\Studio_5_FDAS\FaceDetector\x64\Debug\FaceDetector.exe

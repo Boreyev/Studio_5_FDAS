@@ -48,8 +48,11 @@ int main()
 
 		}
 		cout << "Number of face(s)in the image=" << numFaces << endl;//Displaying the value of x in the console window//
+		string s = to_string(numFaces);
+		string concat = "Number of face(s) in the image: " + s;
+		putText(frame, concat, Point(50, 50), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 0, 0), 2, false);
 		imshow("Webcam Frame", frame);
-
+		//frame.putText(image, str, cv::Point(50, 50), cv::FONT_HERSHEY_DUPLEX, 1, cv::Scalar(0, 255, 0), 2, false);
 
 //		system("pause");//Pausing the system to visualize the result//
 
