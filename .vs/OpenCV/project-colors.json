@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "a169ab85-c6d0-4eee-a959-89e524ac59d3": {
+      "ProjectGuid": "a169ab85-c6d0-4eee-a959-89e524ac59d3",
+      "DisplayName": "OpenCV",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}
