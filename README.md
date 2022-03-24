@@ -1,12 +1,6 @@
 # Studio_5_FDAS
 Repository for the development of FDAS (Face Detection Attendance System)
 
-```
-git status
-git add
-git commit
-```
-
 # How to get app running:
 1. open vs code terminal
 2. create virtual env: 
