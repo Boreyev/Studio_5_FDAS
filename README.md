@@ -12,15 +12,13 @@ python -m venv venv
 ``` 
 venv/bin/activate 
 ```
-###### 4. install numpy:
+###### 4. install libraries:
 ``` 
 pip install numpy 
 ```
-###### 5. install face recognition:
 ``` 
 pip install face_recognition 
 ```
-###### 6. install opencv: 
 ``` 
 pip install opencv-python
 ```
