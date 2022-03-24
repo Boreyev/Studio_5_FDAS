@@ -3,7 +3,7 @@ Repository for the development of FDAS (Face Detection Attendance System)
 
 # How to get app running:
 ## 1. open vs code terminal
-
+ctrl + shift + `
 ## 2. create virtual env: 
 ``` 
 python -m venv venv 
