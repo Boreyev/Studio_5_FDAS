@@ -31,11 +31,13 @@ while True: #Loop to start taking all the frameworks from the camera
 
     font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 
+    cv2.rectangle(frame, (0, 0), (100 + 85, 10 + 10), (19, 155, 35), cv2.FILLED) #Add box behind text for visibility
+
     cv2.putText(frame, 
                 numFacesTxt, 
-                (50, 50), 
-                font, 1, 
-                (0, 255, 255), 
+                (5, 15), 
+                font, 0.5, 
+                (255, 255, 255), 
                 2, 
                 2)
 
@@ -51,10 +53,10 @@ while True: #Loop to start taking all the frameworks from the camera
         if matches[best_match_index]:
             name = known_face_names[best_match_index]
         
-        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+        cv2.rectangle(frame, (left, top), (right, bottom), (19, 155, 35), 2)
 
-        cv2.rectangle(frame, (left, bottom -35), (right, bottom), (0, 0, 255), cv2.FILLED)
-        cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
+        cv2.rectangle(frame, (left, bottom -15), (right, bottom), (19, 155, 35), cv2.FILLED)
+        cv2.putText(frame, name, (left +3, bottom -3), font, 0.5, (255, 255, 255), 1)
 
     cv2.imshow('webcam', frame)
 
@@ -64,4 +66,5 @@ while True: #Loop to start taking all the frameworks from the camera
 webcam.release()
 cv2.destroyAllWindows()
 
-#ref: https://l.facebook.com/l.php?u=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DlC_y8wD7F3Y%26fbclid%3DIwAR1UhwwdchPDUGxUfe_wTlQndCYBos1kkkpHZA1PyJ0Euc8LhIEAcbco0ZM&h=AT1jjLsnPX-m1pz9eusad48aDDudVJckzcaFIFXYMR20IPxYdEeKjYshm0wtD-ter4BHx1ppQ79boSJ_mzBb-z7joT0mqT_rrnfJBHP6sSapfd6og35sHRAabn5ICkHL9LBazrqXuMsQxrI
+#Small parts of the initial functionality of this code is derived from the repository found below:
+#ref: https://github.com/brunocenteno/face_recognition_video_tutorial
