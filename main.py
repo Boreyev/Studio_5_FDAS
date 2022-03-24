@@ -31,13 +31,7 @@ while True: #Loop to start taking all the frameworks from the camera
 
     font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 
-    cv2.putText(frame, 
-                numFacesTxt, 
-                (50, 50), 
-                font, 1, 
-                (0, 255, 255), 
-                2, 
-                2)
+    cv2.putText(frame, numFacesTxt, (50, 50), font, 1, (0, 255, 255),  2, 2) #write to the webcam # of people
 
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
 
