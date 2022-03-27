@@ -10,7 +10,7 @@ python -m venv venv
 ```
 ###### 3. activate virtual env: 
 ``` 
-venv/bin/activate 
+venv/Scripts/activate 
 ```
 ###### 4. install libraries:
 ``` 
