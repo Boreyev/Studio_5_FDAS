@@ -22,3 +22,10 @@ pip install face_recognition
 ``` 
 pip install opencv-python
 ```
+
+### Note:
+you may need to run
+``` 
+pip install cmake 
+```
+in order to install face_recognition
