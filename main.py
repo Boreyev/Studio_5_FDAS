@@ -1,7 +1,8 @@
 import numpy as np
 import face_recognition as fr
-import time 
+import time
 import cv2
+import datetime
 
 ptime = 0 #Time = 0
 webcam = cv2.VideoCapture(0) #takes video from webcam
@@ -10,15 +11,15 @@ def make_480p():    #Adjusts the camera input to 480p, saves resources. CANNOT B
     webcam.set(3, 640)
     webcam.set(4, 480)
 
-belle = fr.load_image_file("belle_frontal_brow.jpg")
+belle = fr.load_image_file("belle_frontal_brow.jpg", mode='RGB') #Load image, convert to RGB on import
 #face encoding
 belleFaceEncoding = fr.face_encodings(belle)[0]
 
-Ike = fr.load_image_file("Ike_frontal_brow.jpg")
+Ike = fr.load_image_file("Ike_frontal_brow.jpg", mode='RGB') 
 ikeFaceEncoding = fr.face_encodings(Ike)[0]
 
 known_faces_encodings= [belleFaceEncoding, ikeFaceEncoding]
-known_face_names = ["Belle", "Ike"]
+known_face_names = ["belle", "Ike"]
 
 #detector = fr.get_frontal_face_detector() #detects the coordinate of faces
 
@@ -29,15 +30,11 @@ while True: #Loop to start taking all the frameworks from the camera
                                                          #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
                                                          #This method is left at the default 1, It can be upscaled but is not recommended. 
 
-    rgb_frame = frame_resize[:, :, ::-1] #convertframe to rgb
-
-
-    face_locations = fr.face_locations(rgb_frame) #check where faces are in the frame
-    face_encodings = fr.face_encodings(rgb_frame, face_locations) #detects which faces are in the frame
+    face_locations = fr.face_locations(frame_resize) #check where faces are in the frame
+    face_encodings = fr.face_encodings(frame_resize, face_locations) #detects which faces are in the frame
 
     numFaces = len(face_encodings)
-    numFacesStr = str(numFaces)
-    numFacesTxt = " : Number of faces: " + numFacesStr 
+    confidence = str(face_locations)
 
     font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 
@@ -56,7 +53,7 @@ while True: #Loop to start taking all the frameworks from the camera
                 2)
 
     cv2.putText(frame, 
-                numFacesTxt, 
+                f'Number of faces: {numFaces}',
                 (50, 15), 
                 font, 0.5, 
                 (255, 255, 255), 
@@ -65,20 +62,32 @@ while True: #Loop to start taking all the frameworks from the camera
 
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
 
-        matches = fr.compare_faces(known_faces_encodings, face_encoding)
+        nTime = datetime.datetime.now().time()
+        matches = fr.compare_faces(known_faces_encodings, face_encoding, tolerance=0.6)
 
         name = "Unknown"
 
-        face_distances = fr.face_distance(known_faces_encodings, face_encoding) #compares face encodings and tells you how similar the faces are
+        face_distances = fr.face_distance(known_faces_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
+        confidence = str(face_distances) #Confidence = face_distance of detected face and face_encoding
+        best_match_index = np.argmin(face_distances) #Most similar face_distance = the best match
 
-        best_match_index = np.argmin(face_distances) #most similar face_distance = the best match
         if matches[best_match_index]:
             name = known_face_names[best_match_index]
         
+        #Draw rectangles
         cv2.rectangle(frame, (left, top), (right, bottom), (19, 155, 35), 2)
-
         cv2.rectangle(frame, (left, bottom -15), (right, bottom), (19, 155, 35), cv2.FILLED)
+
+        #Display Text
         cv2.putText(frame, name, (left +3, bottom -3), font, 0.5, (255, 255, 255), 1)
+        cv2.putText(frame,f'{confidence}', (left +3, top -6), font, 0.5, (255, 255, 255), 1) #Put confidence interval above frame, split string to display as percentage. 
+
+        while True:
+            lines = [str(nTime), name + ': ' + confidence]
+            with open('test_data.txt', 'a') as f:
+                for line in lines:
+                    f.write(line)
+                    f.write('\n')
 
     cv2.imshow('webcam', frame)
 
@@ -94,3 +103,4 @@ cv2.destroyAllWindows()
 #base: https://github.com/brunocenteno/face_recognition_video_tutorial
 #Frame scaling: https://www.codingforentrepreneurs.com/blog/open-cv-python-change-video-resolution-or-scale/
 #FPS display snippet from: https://www.geeksforgeeks.org/yawn-detection-using-opencv-and-dlib/ 
+#Append to text file: https://www.pythontutorial.net/python-basics/python-write-text-file/
