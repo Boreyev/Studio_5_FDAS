@@ -1,7 +1,6 @@
 from cgitb import small
 from array import array
 import time
-from xml.etree.ElementTree import tostringlist
 import face_recognition as fr
 import numpy as np
 import cv2
