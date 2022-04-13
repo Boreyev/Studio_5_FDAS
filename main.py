@@ -1,6 +1,7 @@
 from cgitb import small
-from time import sleep
+from array import array
 import time
+from xml.etree.ElementTree import tostringlist
 import face_recognition as fr
 import numpy as np
 import cv2
@@ -19,12 +20,13 @@ belle = fr.load_image_file("dataset/belle_frontal_brow.jpg", mode='RGB') #Load i
 belleFaceEncoding = fr.face_encodings(belle)[0]
 
 Ike = fr.load_image_file("dataset/Ike_frontal_brow.jpg", mode='RGB') 
-ikeFaceEncoding = fr.face_encodings(Ike,)[0]
+ikeFaceEncoding = fr.face_encodings(Ike)[0]
 
-known_faces_encodings= [belleFaceEncoding, ikeFaceEncoding]
-known_face_names = ["belle", "Ike"]
+Test_face = fr.load_image_file("dataset/human.jpg", mode='RGB') 
+testFaceEncoding = fr.face_encodings(Test_face)[0]
 
-#detector = fr.get_frontal_face_detector() #detects the coordinate of faces
+known_faces_encodings= [belleFaceEncoding, ikeFaceEncoding, testFaceEncoding]
+known_face_names = ["belle", "Ike", "Test_face"]
 
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
@@ -37,7 +39,6 @@ while True: #Loop to start taking all the frameworks from the camera
     face_locations = fr.face_locations(rgb_frame, model="hog")                  #check where faces are in the frame, uses hog model (faster but less accurate)
     face_encodings = fr.face_encodings(rgb_frame, face_locations, model=small)  #detects which faces are in the frame
     numFaces = len(face_encodings)                                              #Number of faces in frame = length of face_encodings array
-    confidence = str(fr.face_encodings)                                         #Confidence estimate is from euclidean distance from each comparison face 
 
     ctime = time.time() #Method to get fps by getting passed time since beginning and end of each loop
     fps= int(1/(ctime-ptime))
@@ -64,13 +65,13 @@ while True: #Loop to start taking all the frameworks from the camera
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
 
         nTime = datetime.datetime.now().time()
-        matches = fr.compare_faces(known_faces_encodings, face_encoding, tolerance=0.6)
-
+        matches = fr.compare_faces(known_faces_encodings, face_encoding, tolerance=0.4)
         name = "Unknown"
 
         face_distances = fr.face_distance(known_faces_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
-        confidence = str(face_distances) #Confidence = face_distance of detected face and face_encoding
-        best_match_index = np.argmin(face_distances) #Most similar face_distance = the best match
+        best_match_index = np.argmin(face_distances)                            #Most similar face_distance = the best match
+
+        confidence = min(face_distances)                                        #Confidence = minimum distance returned by face_distance list
 
         if matches[best_match_index]:
             name = known_face_names[best_match_index]
@@ -83,13 +84,13 @@ while True: #Loop to start taking all the frameworks from the camera
         cv2.putText(frame, name, (left +3, bottom -3), font, 0.5, (255, 255, 255), 1)
         cv2.putText(frame,f'{confidence}', (left +3, top -6), font, 0.5, (255, 255, 255), 1) #Put confidence interval above frame, split string to display as percentage. 
         
-        lines = [str(nTime), name + ': ' + confidence]
-        with open('test_data.txt', 'a') as f:
-            for line in lines:
-                f.write(line)
-                f.write('\n')
+        #lines = [str(nTime), name + ': ' + confidence]
+       # with open('test_data.txt', 'a') as f:
+          #  for line in lines:
+           #     f.write(line)
+            #    f.write('\n')
 
-        cv2.imwrite("live_dataset/"+name+confidence+'.jpg',frame) #Each time face is detected, save image with name and confidence level
+        #cv2.imwrite("live_dataset/"+name+confidence+'.jpg',frame) #Each time face is detected, save image with name and confidence level
         
     cv2.imshow('webcam', frame)
 
