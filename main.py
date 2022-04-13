@@ -4,6 +4,7 @@ import face_recognition as fr
 import numpy as np
 import cv2
 import datetime
+from pathlib import Path; 
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
@@ -46,17 +47,20 @@ def face_Frame_Visuals():
         cv2.putText(frame, name, (left +3, bottom -3), font, 0.5, (255, 255, 255), 1)        #Displays name
         cv2.putText(frame,f'{confidence}', (left +3, top -6), font, 0.5, (255, 255, 255), 1) #Put confidence interval above frame, split string to display as percentage. 
 
-belle = fr.load_image_file("dataset/belle_frontal_brow.jpg", mode='RGB') #Load image, convert to RGB on import
+
+belle = fr.load_image_file("dataset/Belle.jpg", mode='RGB') #Load image, convert to RGB on import
 belleFaceEncoding = fr.face_encodings(belle)[0]
+belleName = (Path("dataset/Belle.jpg").stem)
 
-Ike = fr.load_image_file("dataset/Ike_frontal_brow.jpg", mode='RGB') 
+Ike = fr.load_image_file("dataset/Ike.jpg", mode='RGB') 
 ikeFaceEncoding = fr.face_encodings(Ike)[0]
+ikeName = (Path("dataset/Belle.jpg").stem)
 
-Test_face = fr.load_image_file("dataset/human.jpg", mode='RGB') 
-testFaceEncoding = fr.face_encodings(Test_face)[0]
+#Test_face = fr.load_image_file("dataset/human.jpg", mode='RGB') 
+#testFaceEncoding = fr.face_encodings(Test_face)[0]
 
-known_faces_encodings= [belleFaceEncoding, ikeFaceEncoding, testFaceEncoding]
-known_face_names = ["belle", "Ike", "Test_face"]
+known_faces_encodings= [belleFaceEncoding, ikeFaceEncoding] #, testFaceEncoding]
+known_face_names = [belleName, ikeName] #, "Test_face"]
 
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
