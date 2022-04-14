@@ -3,7 +3,7 @@ import time
 import face_recognition as fr
 import numpy as np
 import cv2
-import datetime
+from datetime import datetime
 from pathlib import Path; 
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
@@ -23,6 +23,18 @@ def save_Data():    #Outputs face detection data to text file
         for line in lines:
             f.write(line)
             f.write('\n')
+
+def attendance(name):
+    with open('Attendance.csv', 'r+') as f: #r+ allows reading and writing
+        attendanceData = f.readlines() #read all lines currently in data to avoid repeats
+        roll = [] #empty list for all names that are found
+        for line in attendanceData: #goes through attendance.csv to check which students are present
+            entry = line.split(',') 
+            roll.append(entry[0]) 
+        if name not in roll: #if name is already not present...
+            curTime = datetime.now()
+            arrival_time = curTime.strftime('%H:%M:%S')
+            f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
 
 def frame_Visuals():
     cv2.rectangle(frame, (0, 0), (100 + 150, 10 + 10), (19, 155, 35), cv2.FILLED) #Add box behind text for visibility
@@ -48,13 +60,13 @@ def face_Frame_Visuals():
         cv2.putText(frame,f'{confidence}', (left +3, top -6), font, 0.5, (255, 255, 255), 1) #Put confidence interval above frame, split string to display as percentage. 
 
 
-belle = fr.load_image_file("dataset/Belle.jpg", mode='RGB') #Load image, convert to RGB on import
+belle = fr.load_image_file("face_dataset/Belle.jpg", mode='RGB') #Load image, convert to RGB on import
 belleFaceEncoding = fr.face_encodings(belle)[0]
-belleName = (Path("dataset/Belle.jpg").stem)
+belleName = (Path("face_dataset/Belle.jpg").stem)
 
-Ike = fr.load_image_file("dataset/Ike.jpg", mode='RGB') 
+Ike = fr.load_image_file("face_dataset/Ike.jpg", mode='RGB') 
 ikeFaceEncoding = fr.face_encodings(Ike)[0]
-ikeName = (Path("dataset/Belle.jpg").stem)
+ikeName = (Path("face_dataset/Ike.jpg").stem)
 
 #Test_face = fr.load_image_file("dataset/human.jpg", mode='RGB') 
 #testFaceEncoding = fr.face_encodings(Test_face)[0]
@@ -82,7 +94,7 @@ while True: #Loop to start taking all the frameworks from the camera
 
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
 
-        nTime = datetime.datetime.now().time()
+        nTime = datetime.now().time()
         matches = fr.compare_faces(known_faces_encodings, face_encoding, tolerance=0.5)
         name = "Unknown"
 
@@ -95,6 +107,7 @@ while True: #Loop to start taking all the frameworks from the camera
         if matches[best_match_index]:
             name = known_face_names[best_match_index]
         
+        attendance(name)
         face_Frame_Visuals()
         save_Face()
         save_Data()
