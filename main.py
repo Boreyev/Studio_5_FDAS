@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 from datetime import datetime
 from pathlib import Path; 
+import sqlite3
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
@@ -21,7 +22,7 @@ def save_Data():    #Outputs face detection data to text file
     lines = [str(nTime), name + ': ' + str(confidence_out)]
     with open('test_data.txt', 'a') as f:
         for line in lines:
-            f.write(line)
+            f.write(line) 
             f.write('\n')
 
 def attendance(name):
@@ -35,6 +36,29 @@ def attendance(name):
             curTime = datetime.now()
             arrival_time = curTime.strftime('%H:%M:%S')
             f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
+            #attendanceQuery(name, arrival_time)
+
+#def attendanceQuery(name, datetime):
+    #connection = sqlite3.connect('fdas.db') #if database does not exist it will be created
+
+#create cursor to interact with sql commands
+   # cursor = connection.cursor()
+
+ #create table
+   # cursor.execute("CREATE TABLE attendance(name string, datetime string)")
+   # connection.commit()
+
+    #sqlite_insert_query = """INSERT INTO attendance
+                        #  (name, datetime) 
+                         #  VALUES 
+                         # ({name}, {datetime})"""
+
+#  #count = cursor.execute(sqlite_insert_query)
+ #connection.commit()
+  #  print("Record inserted successfully into table")
+    #cursor.close()
+   # connection.commit()
+
 
 def frame_Visuals():
     cv2.rectangle(frame, (0, 0), (100 + 150, 10 + 10), (19, 155, 35), cv2.FILLED) #Add box behind text for visibility
