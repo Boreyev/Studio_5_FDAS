@@ -16,3 +16,8 @@ connection.commit()
 #cat_img = open( 'cat.jpg', 'rb' ).read()
 
 #insert to db
+#create_db and tables
+connection = sqlite3.connect('fdas.db') #if database does not exist it will be created
+cursor = connection.cursor() #create cursor to interact with sql commands
+cursor.execute("CREATE TABLE attendance(name string, datetime string)")
+connection.commit()

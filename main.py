@@ -4,7 +4,7 @@ import face_recognition as fr
 import numpy as np
 import cv2
 from datetime import datetime
-from pathlib import Path; 
+from pathlib import Path
 import sqlite3
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
@@ -22,8 +22,19 @@ def save_Data():    #Outputs face detection data to text file
     lines = [str(nTime), name + ': ' + str(confidence_out)]
     with open('test_data.txt', 'a') as f:
         for line in lines:
-            f.write(line) 
+            f.write(line)
             f.write('\n')
+
+def create_db():
+    connection = sqlite3.connect('fdas.db') #if database does not exist it will be created
+    cursor = connection.cursor() #create cursor to interact with sql commands
+    cursor.execute("CREATE TABLE attendance(name string, datetime string)")
+    connection.commit()
+
+def add_attendance(name, arrival_time):
+    connection = sqlite3.connect('fdas.db')
+    cursor = connection.cursor()
+    cursor.execute("insert into attendance values(?,?)", (name, arrival_time))
 
 def attendance(name):
     with open('Attendance.csv', 'r+') as f: #r+ allows reading and writing
@@ -36,28 +47,7 @@ def attendance(name):
             curTime = datetime.now()
             arrival_time = curTime.strftime('%H:%M:%S')
             f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
-            #attendanceQuery(name, arrival_time)
-
-#def attendanceQuery(name, datetime):
-    #connection = sqlite3.connect('fdas.db') #if database does not exist it will be created
-
-#create cursor to interact with sql commands
-   # cursor = connection.cursor()
-
- #create table
-   # cursor.execute("CREATE TABLE attendance(name string, datetime string)")
-   # connection.commit()
-
-    #sqlite_insert_query = """INSERT INTO attendance
-                        #  (name, datetime) 
-                         #  VALUES 
-                         # ({name}, {datetime})"""
-
-#  #count = cursor.execute(sqlite_insert_query)
- #connection.commit()
-  #  print("Record inserted successfully into table")
-    #cursor.close()
-   # connection.commit()
+            add_attendance(name, arrival_time)
 
 
 def frame_Visuals():
