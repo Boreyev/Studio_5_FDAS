@@ -3,6 +3,7 @@ import time
 import face_recognition as fr
 import numpy as np
 import cv2
+import os
 from datetime import datetime
 from pathlib import Path
 import sqlite3
@@ -74,19 +75,36 @@ def face_Frame_Visuals():
         cv2.putText(frame,f'{confidence}', (left +3, top -6), font, 0.5, (255, 255, 255), 1) #Put confidence interval above frame, split string to display as percentage. 
 
 
-belle = fr.load_image_file("face_dataset/Belle.jpg", mode='RGB') #Load image, convert to RGB on import
-belleFaceEncoding = fr.face_encodings(belle)[0]
-belleName = (Path("face_dataset/Belle.jpg").stem)
+path = "face_dataset"
+images = [] #list of all imgs we are importing
+img_names = [] #list of img names
+img_list = os.listdir(path) #returns list of img names with .jpg extension
+for img in img_list:
+    cur_img = cv2.imread(f'{path}/{img}')
+    images.append(cur_img)
+    img_names.append(os.path.splitext(img)[0]) #removes extension part of file
+#known_encodings = encodings(images)
 
-Ike = fr.load_image_file("face_dataset/Ike.jpg", mode='RGB') 
-ikeFaceEncoding = fr.face_encodings(Ike)[0]
-ikeName = (Path("face_dataset/Ike.jpg").stem)
+list_of_encodings = []
+for img in images:
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    encodeimg = fr.face_encodings(img)
+    list_of_encodings.append(encodeimg)
 
-#Test_face = fr.load_image_file("dataset/human.jpg", mode='RGB') 
-#testFaceEncoding = fr.face_encodings(Test_face)[0]
 
-known_faces_encodings= [belleFaceEncoding, ikeFaceEncoding] #, testFaceEncoding]
-known_face_names = [belleName, ikeName] #, "Test_face"]
+# belle = fr.load_image_file("face_dataset/Belle.jpg", mode='RGB') #Load image, convert to RGB on import
+# belleFaceEncoding = fr.face_encodings(belle)[0]
+# belleName = (Path("face_dataset/Belle.jpg").stem)
+
+# Ike = fr.load_image_file("face_dataset/Ike.jpg", mode='RGB') 
+# ikeFaceEncoding = fr.face_encodings(Ike)[0]
+# ikeName = (Path("face_dataset/Ike.jpg").stem)gggg
+
+# #Test_face = fr.load_image_file("dataset/human.jpg", mode='RGB') 
+# #testFaceEncoding = fr.face_encodings(Test_face)[0]
+
+# known_faces_encodings= [belleFaceEncoding, ikeFaceEncoding] #, testFaceEncoding]
+# known_face_names = [belleName, ikeName] #, "Test_face"]
 
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
@@ -109,17 +127,17 @@ while True: #Loop to start taking all the frameworks from the camera
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
 
         nTime = datetime.now().time()
-        matches = fr.compare_faces(known_faces_encodings, face_encoding, tolerance=0.5)
+        matches = fr.compare_faces(list_of_encodings, face_encoding, tolerance=0.5)
         name = "Unknown"
 
-        face_distances = fr.face_distance(known_faces_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
+        face_distances = fr.face_distance(list_of_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
         best_match_index = np.argmin(face_distances)                            #Most similar face_distance = the best match
 
         confidence = min(face_distances)                                        #Confidence = minimum distance returned by face_distance list
         confidence_out = str(confidence)
 
         if matches[best_match_index]:
-            name = known_face_names[best_match_index]
+            name = img_names[best_match_index]
         
         attendance(name)
         face_Frame_Visuals()
