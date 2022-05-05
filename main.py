@@ -5,7 +5,6 @@ import numpy as np
 import cv2
 import os
 from datetime import datetime
-from pathlib import Path
 import sqlite3
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
@@ -16,15 +15,15 @@ def make_480p():    #Adjusts the camera input to 480p, saves resources. CANNOT B
     webcam.set(3, 640)
     webcam.set(4, 480)
 
-def save_Face():    #Each time face is detected, save image with name and confidence level
-    return cv2.imwrite("live_dataset/"+name+"/"+name+str(confidence_out)+'.jpg',frame) 
+# def save_Face():    #Each time face is detected, save image with name and confidence level
+#     return cv2.imwrite("live_dataset/"+name+"/"+name+str(confidence_out)+'.jpg',frame) 
 
-def save_Data():    #Outputs face detection data to text file
-    lines = [str(nTime), name + ': ' + str(confidence_out)]
-    with open('test_data.txt', 'a') as f:
-        for line in lines:
-            f.write(line)
-            f.write('\n')
+# def save_Data():    #Outputs face detection data to text file
+#     lines = [str(nTime), name + ': ' + str(confidence_out)]
+#     with open('test_data.txt', 'a') as f:
+#         for line in lines:
+#             f.write(line)
+#             f.write('\n')
 
 def create_db():
     connection = sqlite3.connect('fdas.db') #if database does not exist it will be created
@@ -72,8 +71,15 @@ def face_Frame_Visuals():
         cv2.rectangle(frame, (left, top), (right, bottom), (19, 155, 35), 2)                 #Displays frame around detected face
         cv2.rectangle(frame, (left, bottom -15), (right, bottom), (19, 155, 35), cv2.FILLED) #Displays box for name visibility
         cv2.putText(frame, name, (left +3, bottom -3), font, 0.5, (255, 255, 255), 1)        #Displays name
-        cv2.putText(frame,f'{confidence}', (left +3, top -6), font, 0.5, (255, 255, 255), 1) #Put confidence interval above frame, split string to display as percentage. 
+       # cv2.putText(frame,f'{confidence}', (left +3, top -6), font, 0.5, (255, 255, 255), 1) #Put confidence interval above frame, split string to display as percentage. 
 
+def encodings(images):
+    list_of_encodings = []
+    for img in images:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        encodeimg = fr.face_encodings(img) #
+        list_of_encodings.append(encodeimg)
+    return list_of_encodings 
 
 path = "face_dataset"
 images = [] #list of all imgs we are importing
@@ -83,13 +89,10 @@ for img in img_list:
     cur_img = cv2.imread(f'{path}/{img}')
     images.append(cur_img)
     img_names.append(os.path.splitext(img)[0]) #removes extension part of file
-#known_encodings = encodings(images)
 
-list_of_encodings = []
-for img in images:
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    encodeimg = fr.face_encodings(img)
-    list_of_encodings.append(encodeimg)
+known_encodings = encodings(images)
+
+
 
 
 # belle = fr.load_image_file("face_dataset/Belle.jpg", mode='RGB') #Load image, convert to RGB on import
@@ -127,22 +130,22 @@ while True: #Loop to start taking all the frameworks from the camera
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
 
         nTime = datetime.now().time()
-        matches = fr.compare_faces(list_of_encodings, face_encoding, tolerance=0.5)
+        matches = fr.compare_faces(known_encodings, face_encoding)
         name = "Unknown"
 
-        face_distances = fr.face_distance(list_of_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
+        face_distances = fr.face_distance(known_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
         best_match_index = np.argmin(face_distances)                            #Most similar face_distance = the best match
 
-        confidence = min(face_distances)                                        #Confidence = minimum distance returned by face_distance list
-        confidence_out = str(confidence)
+        # confidence = min(face_distances)                                        #Confidence = minimum distance returned by face_distance list
+        # confidence_out = str(confidence)
 
         if matches[best_match_index]:
             name = img_names[best_match_index]
         
         attendance(name)
         face_Frame_Visuals()
-        save_Face()
-        save_Data()
+      #  save_Face()
+       # save_Data()
 
     cv2.imshow('webcam', frame)
 
