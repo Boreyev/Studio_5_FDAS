@@ -1,5 +1,6 @@
 from cgitb import small
 import time
+from venv import create
 import face_recognition as fr
 import numpy as np
 import cv2
@@ -26,15 +27,16 @@ def save_Data():    #Outputs face detection data to text file
             f.write('\n')
 
 def create_db():
-    connection = sqlite3.connect('fdas.db') #if database does not exist it will be created
+    connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
     cursor = connection.cursor() #create cursor to interact with sql commands
     cursor.execute("CREATE TABLE attendance(name string, datetime string)")
     connection.commit()
 
 def add_attendance(name, arrival_time):
-    connection = sqlite3.connect('fdas.db')
+    connection = sqlite3.connect('fdas.sqlite')
     cursor = connection.cursor()
     cursor.execute("insert into attendance values(?,?)", (name, arrival_time))
+    connection.commit()
 
 def attendance(name):
     with open('Attendance.csv', 'r+') as f: #r+ allows reading and writing
@@ -46,7 +48,7 @@ def attendance(name):
         if name not in roll: #if name is already not present...
             curTime = datetime.now()
             arrival_time = curTime.strftime('%H:%M:%S')
-            f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
+            f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded  
             add_attendance(name, arrival_time)
 
 
@@ -87,6 +89,7 @@ ikeName = (Path("face_dataset/Ike.jpg").stem)
 
 known_faces_encodings= [belleFaceEncoding, ikeFaceEncoding] #, testFaceEncoding]
 known_face_names = [belleName, ikeName] #, "Test_face"]
+create_db()
 
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
