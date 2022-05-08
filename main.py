@@ -14,7 +14,11 @@ def make_480p():    #Adjusts the camera input to 480p, saves resources. CANNOT B
     webcam.set(4, 480)
 
 def save_Face():    #Each time face is detected, save image with name and confidence level
-    return cv2.imwrite("live_dataset/"+name+"/"+name+str(confidence_out)+'.jpg',frame) 
+        height = bottom - top   #Define height / width
+        width = right - left
+        crop_Face = frame[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
+        save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(confidence_out)+'.jpg',crop_Face) 
+        return save_Image
 
 def save_Data():    #Outputs face detection data to text file
     lines = [str(nTime), name + ': ' + str(confidence_out)]
@@ -110,3 +114,4 @@ cv2.destroyAllWindows()
 #FPS display snippet from: https://www.geeksforgeeks.org/yawn-detection-using-opencv-and-dlib/ 
 #Append to text file: https://www.pythontutorial.net/python-basics/python-write-text-file/
 #face_recognition documentation: https://face-recognition.readthedocs.io/en/latest/face_recognition.html
+#Face cropping logic: https://www.geeksforgeeks.org/cropping-faces-from-images-using-opencv-python/
