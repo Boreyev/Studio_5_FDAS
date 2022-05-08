@@ -22,16 +22,20 @@ def save_Face():    #Each time face is detected, save image with name and confid
             width = right - left
             crop_Face = frame[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
             save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face) 
-
     return save_Image
 
-def resize_Face(): #Not in use as of now, work in progress. 
-    img_Height = 150
-    img_Width = 150
+def resize_Face(): #Not in use as of now, work in progress 
+    img_Height = 100
+    img_Width = 100
     img_Dim = img_Width, img_Height
-    img_Name = cv2.imread("live_dataset/"+name+"/"+name+str(confidence_out)+'.jpg', cv2.IMREAD_UNCHANGED)
-    resize_Img = cv2.resize(img_Name, img_Dim)
-    save_Img_Resize = cv2.imwrite(img_Name, resize_Img)
+
+    for i in range(5):
+        if i==5:
+            i = 0
+        elif i == 0 or 1 or 2 or 3 or 4:
+            img_Name = cv2.imread("live_dataset/"+name+"/"+name+str(i)+'.jpg')
+            resize_Img = cv2.resize(img_Name, img_Dim, interpolation = cv2.INTER_AREA)
+            save_Img_Resize = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg', resize_Img)
     return save_Img_Resize
     
 def save_Data():    #Outputs face detection data to text file
@@ -111,6 +115,7 @@ while True: #Loop to start taking all the frameworks from the camera
         
         face_Frame_Visuals()
         save_Face()
+        resize_Face()
         save_Data()
 
     cv2.imshow('webcam', frame)
