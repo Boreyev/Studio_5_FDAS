@@ -77,8 +77,8 @@ def encodings(images):
     list_of_encodings = []
     for img in images:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        encodeimg = fr.face_encodings(img) #
-        list_of_encodings.append(encodeimg)
+        encode_img = fr.face_encodings(img)[0] #
+        list_of_encodings.append(encode_img)
     return list_of_encodings 
 
 path = "face_dataset"
@@ -89,7 +89,7 @@ for img in img_list:
     cur_img = cv2.imread(f'{path}/{img}')
     images.append(cur_img)
     img_names.append(os.path.splitext(img)[0]) #removes extension part of file
-
+    
 known_encodings = encodings(images)
 
 
