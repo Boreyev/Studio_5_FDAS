@@ -15,9 +15,31 @@ def make_480p():    #Adjusts the camera input to 480p, saves resources. CANNOT B
     webcam.set(3, 640)
     webcam.set(4, 480)
 
-# def save_Face():    #Each time face is detected, save image with name and confidence level
-#     return cv2.imwrite("live_dataset/"+name+"/"+name+str(confidence_out)+'.jpg',frame) 
+def save_Face():    #Each time face is detected, save image with name and confidence level
+    for i in range(5):
+        if i==5:
+            i = 0
+        elif i == 0 or 1 or 2 or 3 or 4:
+            height = bottom - top + 15   #Define height / width
+            width = right - left
+            crop_Face = frame[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
+            save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face) 
+    return save_Image
 
+def resize_Face(): #Not in use as of now, work in progress 
+    img_Height = 100
+    img_Width = 100
+    img_Dim = img_Width, img_Height
+
+    for i in range(5):
+        if i==5:
+            i = 0
+        elif i == 0 or 1 or 2 or 3 or 4:
+            img_Name = cv2.imread("live_dataset/"+name+"/"+name+str(i)+'.jpg')
+            resize_Img = cv2.resize(img_Name, img_Dim, interpolation = cv2.INTER_AREA)
+            save_Img_Resize = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg', resize_Img)
+    return save_Img_Resize
+    
 def save_Data():    #Outputs face detection data to text file
     lines = [str(nTime), name + ': ' + str(confidence_out)]
     with open('test_data.txt', 'a') as f:
@@ -71,9 +93,9 @@ def face_Frame_Visuals():
         cv2.rectangle(frame, (left, top), (right, bottom), (19, 155, 35), 2)                 #Displays frame around detected face
         cv2.rectangle(frame, (left, bottom -15), (right, bottom), (19, 155, 35), cv2.FILLED) #Displays box for name visibility
         cv2.putText(frame, name, (left +3, bottom -3), font, 0.5, (255, 255, 255), 1)        #Displays name
-       # cv2.putText(frame,f'{confidence}', (left +3, top -6), font, 0.5, (255, 255, 255), 1) #Put confidence interval above frame, split string to display as percentage. 
+     
 
-def save_Data(face_encoding):    #Outputs face detection data to text file
+def save_encoding_Data(face_encoding):    #Outputs face detection data to text file
      lines = [str(face_encoding)]
      with open('encoding_data.txt', 'a') as f:
          for line in lines:
@@ -101,14 +123,13 @@ for img in img_list:
     
 known_encodings = encodings(images)
 
-
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
 
     frame_resize = cv2.resize(frame, (0, 0), fx=1, fy=1)    #Resizes frame by adjusting frame height and width.
                                                                 #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
                                                                 #This method is left at the default 1, It can be upscaled but is not recommended. 
-    rgb_frame = frame_resize[:, :, ::1]                     #convertframe to rgb
+    rgb_frame = frame_resize[:, :, ::-1]                     #convertframe to rgb
 
     face_locations = fr.face_locations(rgb_frame, model="hog")                  #check where faces are in the frame, uses hog model (faster but less accurate)
     face_encodings = fr.face_encodings(rgb_frame, face_locations, model=small)  #detects which faces are in the frame
@@ -137,8 +158,11 @@ while True: #Loop to start taking all the frameworks from the camera
         
         attendance(name)
         face_Frame_Visuals()
-      #  save_Face()
-        save_Data(face_encoding)
+        save_encoding_Data(face_encoding)
+        save_Face()
+        resize_Face()
+        save_Data()
+
 
     cv2.imshow('webcam', frame)
 
@@ -155,3 +179,4 @@ cv2.destroyAllWindows()
 #FPS display snippet from: https://www.geeksforgeeks.org/yawn-detection-using-opencv-and-dlib/ 
 #Append to text file: https://www.pythontutorial.net/python-basics/python-write-text-file/
 #face_recognition documentation: https://face-recognition.readthedocs.io/en/latest/face_recognition.html
+#Face cropping logic: https://www.geeksforgeeks.org/cropping-faces-from-images-using-opencv-python/
