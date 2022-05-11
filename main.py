@@ -18,12 +18,12 @@ def make_480p():    #Adjusts the camera input to 480p, saves resources. CANNOT B
 # def save_Face():    #Each time face is detected, save image with name and confidence level
 #     return cv2.imwrite("live_dataset/"+name+"/"+name+str(confidence_out)+'.jpg',frame) 
 
-# def save_Data():    #Outputs face detection data to text file
-#     lines = [str(nTime), name + ': ' + str(confidence_out)]
-#     with open('test_data.txt', 'a') as f:
-#         for line in lines:
-#             f.write(line)
-#             f.write('\n')
+def save_Data():    #Outputs face detection data to text file
+    lines = [str(nTime), name + ': ' + str(confidence_out)]
+    with open('test_data.txt', 'a') as f:
+        for line in lines:
+            f.write(line)
+            f.write('\n')
 
 def create_db():
     connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
@@ -102,23 +102,6 @@ for img in img_list:
 known_encodings = encodings(images)
 
 
-
-
-
-# belle = fr.load_image_file("face_dataset/Belle.jpg", mode='RGB') #Load image, convert to RGB on import
-# belleFaceEncoding = fr.face_encodings(belle)[0]
-# belleName = (Path("face_dataset/Belle.jpg").stem)
-
-# Ike = fr.load_image_file("face_dataset/Ike.jpg", mode='RGB') 
-# ikeFaceEncoding = fr.face_encodings(Ike)[0]
-# ikeName = (Path("face_dataset/Ike.jpg").stem)gggg
-
-# #Test_face = fr.load_image_file("dataset/human.jpg", mode='RGB') 
-# #testFaceEncoding = fr.face_encodings(Test_face)[0]
-
-# known_faces_encodings= [belleFaceEncoding, ikeFaceEncoding] #, testFaceEncoding]
-# known_face_names = [belleName, ikeName] #, "Test_face"]
-
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
 
@@ -146,8 +129,8 @@ while True: #Loop to start taking all the frameworks from the camera
         face_distances = fr.face_distance(known_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
         best_match_index = np.argmin(face_distances)                            #Most similar face_distance = the best match
 
-        # confidence = min(face_distances)                                        #Confidence = minimum distance returned by face_distance list
-        # confidence_out = str(confidence)
+        confidence = min(face_distances)                                        #Confidence = minimum distance returned by face_distance list
+        confidence_out = str(confidence)
 
         if matches[best_match_index]:
             name = img_names[best_match_index]
