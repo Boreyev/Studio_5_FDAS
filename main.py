@@ -3,7 +3,9 @@ import time
 import face_recognition as fr
 import numpy as np
 import cv2
-import datetime
+import os
+from datetime import datetime
+import sqlite3
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
@@ -45,6 +47,31 @@ def save_Data():    #Outputs face detection data to text file
             f.write(line)
             f.write('\n')
 
+def create_db():
+    connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
+    cursor = connection.cursor() #create cursor to interact with sql commands
+    cursor.execute("CREATE TABLE attendance(name string, datetime string)")
+    connection.commit()
+
+def add_attendance(name, arrival_time):
+    connection = sqlite3.connect('fdas.sqlite')
+    cursor = connection.cursor()
+    cursor.execute("insert into attendance values(?,?)", (name, arrival_time))
+
+def attendance(name):
+    with open('Attendance.csv', 'r+') as f: #r+ allows reading and writing
+        attendanceData = f.readlines() #read all lines currently in data to avoid repeats
+        roll = [] #empty list for all names that are found
+        for line in attendanceData: #goes through attendance.csv to check which students are present
+            entry = line.split(',') 
+            roll.append(entry[0]) 
+        if name not in roll: #if name is already not present...
+            curTime = datetime.now()
+            arrival_time = curTime.strftime('%H:%M:%S')
+            f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
+            add_attendance(name, arrival_time)
+
+
 def frame_Visuals():
     cv2.rectangle(frame, (0, 0), (100 + 150, 10 + 10), (19, 155, 35), cv2.FILLED) #Add box behind text for visibility
     cv2.putText(frame,                                                            #Displays FPS 
@@ -66,19 +93,35 @@ def face_Frame_Visuals():
         cv2.rectangle(frame, (left, top), (right, bottom), (19, 155, 35), 2)                 #Displays frame around detected face
         cv2.rectangle(frame, (left, bottom -15), (right, bottom), (19, 155, 35), cv2.FILLED) #Displays box for name visibility
         cv2.putText(frame, name, (left +3, bottom -3), font, 0.5, (255, 255, 255), 1)        #Displays name
-        cv2.putText(frame,f'{confidence}', (left +3, bottom +8), font, 0.3, (255, 255, 255), 1) #Put confidence interval above frame, split string to display as percentage. 
+     
 
-belle = fr.load_image_file("dataset/belle_frontal_brow.jpg", mode='RGB') #Load image, convert to RGB on import
-belleFaceEncoding = fr.face_encodings(belle)[0]
+def save_encoding_Data(face_encoding):    #Outputs face detection data to text file
+     lines = [str(face_encoding)]
+     with open('encoding_data.txt', 'a') as f:
+         for line in lines:
+             f.write(line)
+             f.write('\n')
 
-Ike = fr.load_image_file("dataset/Ike_frontal_brow.jpg", mode='RGB') 
-ikeFaceEncoding = fr.face_encodings(Ike)[0]
+def encodings(images):
+    list_of_encodings = []
+    for img in images:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        encode_img = fr.face_encodings(img)[0] #
+        list_of_encodings.append(encode_img)
+   
+    return list_of_encodings 
 
-Test_face = fr.load_image_file("dataset/human.jpg", mode='RGB') 
-testFaceEncoding = fr.face_encodings(Test_face)[0]
-
-known_faces_encodings= [belleFaceEncoding, ikeFaceEncoding, testFaceEncoding]
-known_face_names = ["belle", "Ike", "Test_face"]
+path = "face_dataset"
+images = [] #list of all imgs we are importing
+img_names = [] #list of img names
+img_list = os.listdir(path) #returns list of img names with .jpg extension
+create_db()
+for img in img_list:
+    cur_img = cv2.imread(f'{path}/{img}')
+    images.append(cur_img)
+    img_names.append(os.path.splitext(img)[0]) #removes extension part of file
+    
+known_encodings = encodings(images)
 
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
@@ -100,23 +143,26 @@ while True: #Loop to start taking all the frameworks from the camera
 
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
 
-        nTime = datetime.datetime.now().time()
-        matches = fr.compare_faces(known_faces_encodings, face_encoding, tolerance=0.5)
+        nTime = datetime.now().time()
+        matches = fr.compare_faces(known_encodings, face_encoding)
         name = "Unknown"
 
-        face_distances = fr.face_distance(known_faces_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
+        face_distances = fr.face_distance(known_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
         best_match_index = np.argmin(face_distances)                            #Most similar face_distance = the best match
 
         confidence = min(face_distances)                                        #Confidence = minimum distance returned by face_distance list
         confidence_out = str(confidence)
 
         if matches[best_match_index]:
-            name = known_face_names[best_match_index]
+            name = img_names[best_match_index]
         
+        attendance(name)
         face_Frame_Visuals()
+        save_encoding_Data(face_encoding)
         save_Face()
         resize_Face()
         save_Data()
+
 
     cv2.imshow('webcam', frame)
 
