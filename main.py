@@ -26,19 +26,19 @@ def save_Face():    #Each time face is detected, save image with name and confid
             save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face) 
     return save_Image
 
-def resize_Face(): #Not in use as of now, work in progress 
-    img_Height = 100
-    img_Width = 100
-    img_Dim = img_Width, img_Height
+# def resize_Face(): #Not in use as of now, work in progress 
+#     img_Height = 100
+#     img_Width = 100
+#     img_Dim = img_Width, img_Height
 
-    for i in range(5):
-        if i==5:
-            i = 0
-        elif i == 0 or 1 or 2 or 3 or 4:
-            img_Name = cv2.imread("live_dataset/"+name+"/"+name+str(i)+'.jpg')
-            resize_Img = cv2.resize(img_Name, img_Dim, interpolation = cv2.INTER_AREA)
-            save_Img_Resize = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg', resize_Img)
-    return save_Img_Resize
+#     for i in range(5):
+#         if i==5:
+#             i = 0
+#         elif i == 0 or 1 or 2 or 3 or 4:
+#             img_Name = cv2.imread("live_dataset/"+name+"/"+name+str(i)+'.jpg')
+#             resize_Img = cv2.resize(img_Name, img_Dim, interpolation = cv2.INTER_AREA)
+#             save_Img_Resize = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg', resize_Img)
+#     return save_Img_Resize
     
 def save_Data():    #Outputs face detection data to text file
     lines = [str(nTime), name + ': ' + str(confidence_out)]
@@ -65,7 +65,7 @@ def attendance(name):
         for line in attendanceData: #goes through attendance.csv to check which students are present
             entry = line.split(',') 
             roll.append(entry[0]) 
-        if name not in roll: #if name is already not present...
+        if name != "Unknown": #if name is already not present...
             curTime = datetime.now()
             arrival_time = curTime.strftime('%H:%M:%S')
             f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
@@ -95,7 +95,7 @@ def face_Frame_Visuals():
         cv2.putText(frame, name, (left +3, bottom -3), font, 0.5, (255, 255, 255), 1)        #Displays name
      
 
-def save_encoding_Data(face_encoding):    #Outputs face detection data to text file
+def save_encoding_Data(face_encoding):    #Outputs face encoding data to text file
      lines = [str(face_encoding)]
      with open('encoding_data.txt', 'a') as f:
          for line in lines:
@@ -155,12 +155,12 @@ while True: #Loop to start taking all the frameworks from the camera
 
         if matches[best_match_index]:
             name = img_names[best_match_index]
-        
-        attendance(name)
+            attendance(name)
+
         face_Frame_Visuals()
         save_encoding_Data(face_encoding)
         save_Face()
-        resize_Face()
+# resize_Face()
         save_Data()
 
 

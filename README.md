@@ -29,3 +29,4 @@ you may need to run
 pip install cmake 
 ```
 in order to install face_recognition
+
