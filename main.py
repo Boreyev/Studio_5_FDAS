@@ -22,13 +22,13 @@ def save_Face():    #Each time face is detected, save image with name and confid
         elif i == 0 or 1 or 2 or 3 or 4:
             height = bottom - top + 15   #Define height / width
             width = right - left
-            crop_Face = frame[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
+            crop_Face = frame_resize[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
             save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face) 
     return save_Image
 
 def resize_Face(): #Not in use as of now, work in progress 
     img_Height = 100
-    img_Width = 100
+    img_Width = 80
     img_Dim = img_Width, img_Height
 
     for i in range(5):
@@ -73,15 +73,15 @@ def attendance(name):
 
 
 def frame_Visuals():
-    cv2.rectangle(frame, (0, 0), (100 + 150, 10 + 10), (19, 155, 35), cv2.FILLED) #Add box behind text for visibility
-    cv2.putText(frame,                                                            #Displays FPS 
+    cv2.rectangle(frame_resize, (0, 0), (100 + 150, 10 + 10), (19, 155, 35), cv2.FILLED) #Add box behind text for visibility
+    cv2.putText(frame_resize,                                                            #Displays FPS 
                 f'FPS:{fps}',
                 (5, 15), 
                 font, 0.5, 
                 (255, 255, 255), 
                 2, 
                 2)
-    cv2.putText(frame,                                                            #Displays number of faces
+    cv2.putText(frame_resize,                                                            #Displays number of faces
                 f'Number of faces: {numFaces}',
                 (70, 15), 
                 font, 0.5, 
@@ -90,9 +90,10 @@ def frame_Visuals():
                 2)
 
 def face_Frame_Visuals():
-        cv2.rectangle(frame, (left, top), (right, bottom), (19, 155, 35), 2)                 #Displays frame around detected face
-        cv2.rectangle(frame, (left, bottom -15), (right, bottom), (19, 155, 35), cv2.FILLED) #Displays box for name visibility
-        cv2.putText(frame, name, (left +3, bottom -3), font, 0.5, (255, 255, 255), 1)        #Displays name
+        cv2.rectangle(frame_resize, (left, top), (right, bottom), (19, 155, 35), 2)                 #Displays frame around detected face
+        cv2.rectangle(frame_resize, (left, bottom +17), (right, bottom), (19, 155, 35), cv2.FILLED) #Displays box for name visibility
+        cv2.putText(frame_resize, name, (left +3, bottom +15), font, 0.3, (255, 255, 255), 1)        #Displays name
+        cv2.putText(frame_resize,f'{confidence}', (left +3, bottom +8), font, 0.3, (255, 255, 255), 1) #Put confidence interval above frame, split string to display as percentage. 
      
 
 def save_encoding_Data(face_encoding):    #Outputs face detection data to text file
@@ -126,9 +127,9 @@ known_encodings = encodings(images)
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
 
-    frame_resize = cv2.resize(frame, (0, 0), fx=1, fy=1)    #Resizes frame by adjusting frame height and width.
+    frame_resize = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)    #Resizes frame by adjusting frame height and width.
                                                                 #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
-                                                                #This method is left at the default 1, It can be upscaled but is not recommended. 
+                                                                #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
     rgb_frame = frame_resize[:, :, ::-1]                     #convertframe to rgb
 
     face_locations = fr.face_locations(rgb_frame, model="hog")                  #check where faces are in the frame, uses hog model (faster but less accurate)
@@ -163,8 +164,7 @@ while True: #Loop to start taking all the frameworks from the camera
         resize_Face()
         save_Data()
 
-
-    cv2.imshow('webcam', frame)
+    cv2.imshow('webcam', frame_resize)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
