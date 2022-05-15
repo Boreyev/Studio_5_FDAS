@@ -6,6 +6,7 @@ import cv2
 import os
 from datetime import datetime
 import sqlite3
+import random 
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
@@ -24,13 +25,25 @@ def save_Face():    #Each time face is detected, save image with name and confid
             width = right - left
             crop_Face = frame[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
             save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face)
-            insert_face_img_db(i, save_Image)
+            insert_face_img_db(save_Image)
     return save_Image
 
-def insert_face_img_db(i, save_Image):
+def insert_face_img_db(save_Image):
     connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
     cursor = connection.cursor() #create cursor to interact with sql commands 
-    cursor.execute("insert into image values(?,?)", (i, save_Image))
+    img_id = random.randint(0,12345)
+    student_id = 0
+    if name == 'Belle':
+        student_id = 101
+    if name == 'Ike':
+        student_id = 102
+    if name == 'John Cena':
+        student_id = 103
+    if name == 'John Key':
+        student_id = 104
+    if name == 'Queen':
+        student_id = 105
+    cursor.execute("insert into image values(?,?,?)", (img_id, student_id, save_Image))
     connection.commit()
 
 
@@ -55,21 +68,19 @@ def save_Data():    #Outputs face detection data to text file
             f.write(line)
             f.write('\n')
 
-def create_db():
-    connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
-    cursor = connection.cursor() #create cursor to interact with sql commands
-    cursor.execute("CREATE TABLE attendance(name string, datetime string)")
-    cursor.execute("""CREATE TABLE image(img_id int NOT NULL, image blob, PRIMARY KEY(img_id))""")
-    connection.commit()
-
-
 def attendance(name):
     connection = sqlite3.connect('fdas.sqlite')
+    class_id = ""
     if name != 'unknown': #if name is already not present...
         curTime = datetime.now()
         arrival_time = curTime.strftime('%H:%M:%S')
-        connection.execute("insert into attendance values(?,?)", (name, arrival_time))
-        connection.commit()
+        if arrival_time > classtime:
+            class_id = "IN510"
+            connection.execute("insert into attendance values(?,?,?)", (class_id, name, arrival_time))
+            connection.commit()
+        elif arrival_time < classtime:
+            connection.execute("insert into attendance values(?,?,?)", (class_id, name, "ABSENT"))
+            connection.commit()
 
 
 def frame_Visuals():
@@ -115,13 +126,13 @@ path = "face_dataset"
 images = [] #list of all imgs we are importing
 img_names = [] #list of img names
 img_list = os.listdir(path) #returns list of img names with .jpg extension
-create_db()
 for img in img_list:
     cur_img = cv2.imread(f'{path}/{img}')
     images.append(cur_img)
-    img_names.append(os.path.splitext(img)[0]) #removes extension part of file
-    
+    img_names.append(os.path.splitext(img)[0]) #removes extension part of file  
 known_encodings = encodings(images)
+
+classtime = '10:00:00'
 
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
@@ -145,6 +156,7 @@ while True: #Loop to start taking all the frameworks from the camera
 
         nTime = datetime.now().time()
         matches = fr.compare_faces(known_encodings, face_encoding)
+        faces_to_compare = [known_encodings, face_encoding]
         name = "Unknown"
 
         face_distances = fr.face_distance(known_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
@@ -161,7 +173,7 @@ while True: #Loop to start taking all the frameworks from the camera
         #save_encoding_Data(face_encoding)
         save_Face()
         #resize_Face()
-        save_Data()
+        #save_Data()
   
 
     cv2.imshow('webcam', frame)
