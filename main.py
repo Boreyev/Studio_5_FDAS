@@ -2,6 +2,10 @@ from cgitb import small
 import time
 import face_recognition as fr
 import numpy as np
+import tkinter
+from tkinter import * 
+from tkinter.ttk import *
+from PIL import Image, ImageTk
 import cv2
 import os
 from datetime import datetime
@@ -10,6 +14,29 @@ import sqlite3
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 ptime = 0 #Time = 0
+
+# Create an instance of TKinter Window or frame
+app = Tk()
+
+# Set the size of the window
+app.geometry("700x350")
+
+# Create a Label to capture the Video frames
+label =Label(app)
+label.grid(row=0, column=0)
+text = Text(app)
+
+# Define function to show frame
+def video_stream():
+   # Get the latest frame and convert into Image
+   cv2image= cv2.cvtColor(webcam.read()[1],cv2.COLOR_BGR2RGB)
+   img = Image.fromarray(cv2image)
+   # Convert image to PhotoImage
+   imgtk = ImageTk.PhotoImage(image = img)
+   label.imgtk = imgtk
+   label.configure(image=imgtk)
+   # Repeat after an interval to capture continiously
+   label.after(20, video_stream)
 
 def save_Face():    #Each time face is detected, save image with name and confidence level
     for i in range(5):
@@ -146,8 +173,6 @@ while True: #Loop to start taking all the frameworks from the camera
     fps= int(1/(ctime-ptime))
     ptime = ctime
 
-    frame_Visuals()
-
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
 
         nTime = datetime.now().time()
@@ -170,7 +195,11 @@ while True: #Loop to start taking all the frameworks from the camera
         save_Data()
         save_distances()
 
+    frame_Visuals()
     cv2.imshow('webcam', frame_resize)
+    cv2.resizeWindow('webcam', 400, 400)
+    #video_stream()
+    #app.mainloop()
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
