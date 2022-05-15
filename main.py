@@ -23,22 +23,30 @@ def save_Face():    #Each time face is detected, save image with name and confid
             height = bottom - top + 15   #Define height / width
             width = right - left
             crop_Face = frame[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
-            save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face) 
+            save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face)
+            insert_face_img_db(i, save_Image)
     return save_Image
 
-def resize_Face(): #Not in use as of now, work in progress 
-    img_Height = 100
-    img_Width = 100
-    img_Dim = img_Width, img_Height
+def insert_face_img_db(i, save_Image):
+    connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
+    cursor = connection.cursor() #create cursor to interact with sql commands 
+    cursor.execute("insert into image values(?,?)", (i, save_Image))
+    connection.commit()
 
-    for i in range(5):
-        if i==5:
-            i = 0
-        elif i == 0 or 1 or 2 or 3 or 4:
-            img_Name = cv2.imread("live_dataset/"+name+"/"+name+str(i)+'.jpg')
-            resize_Img = cv2.resize(img_Name, img_Dim, interpolation = cv2.INTER_AREA)
-            save_Img_Resize = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg', resize_Img)
-    return save_Img_Resize
+
+# def resize_Face(): #Not in use as of now, work in progress 
+#     img_Height = 100
+#     img_Width = 100
+#     img_Dim = img_Width, img_Height
+
+#     for i in range(5):
+#         if i==5:
+#             i = 0
+#         elif i == 0 or 1 or 2 or 3 or 4:
+#             img_Name = cv2.imread("live_dataset/"+name+"/"+name+str(i)+'.jpg')
+#             resize_Img = cv2.resize(img_Name, img_Dim, interpolation = cv2.INTER_AREA)
+#             save_Img_Resize = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg', resize_Img)
+#     return save_Img_Resize
     
 def save_Data():    #Outputs face detection data to text file
     lines = [str(nTime), name + ': ' + str(confidence_out)]
@@ -51,25 +59,17 @@ def create_db():
     connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
     cursor = connection.cursor() #create cursor to interact with sql commands
     cursor.execute("CREATE TABLE attendance(name string, datetime string)")
+    cursor.execute("""CREATE TABLE image(img_id int NOT NULL, image blob, PRIMARY KEY(img_id))""")
     connection.commit()
 
-def add_attendance(name, arrival_time):
-    connection = sqlite3.connect('fdas.sqlite')
-    cursor = connection.cursor()
-    cursor.execute("insert into attendance values(?,?)", (name, arrival_time))
 
 def attendance(name):
-    with open('Attendance.csv', 'r+') as f: #r+ allows reading and writing
-        attendanceData = f.readlines() #read all lines currently in data to avoid repeats
-        roll = [] #empty list for all names that are found
-        for line in attendanceData: #goes through attendance.csv to check which students are present
-            entry = line.split(',') 
-            roll.append(entry[0]) 
-        if name not in roll: #if name is already not present...
-            curTime = datetime.now()
-            arrival_time = curTime.strftime('%H:%M:%S')
-            f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
-            add_attendance(name, arrival_time)
+    connection = sqlite3.connect('fdas.sqlite')
+    if name != 'unknown': #if name is already not present...
+        curTime = datetime.now()
+        arrival_time = curTime.strftime('%H:%M:%S')
+        connection.execute("insert into attendance values(?,?)", (name, arrival_time))
+        connection.commit()
 
 
 def frame_Visuals():
@@ -155,14 +155,14 @@ while True: #Loop to start taking all the frameworks from the camera
 
         if matches[best_match_index]:
             name = img_names[best_match_index]
-        
-        attendance(name)
-        face_Frame_Visuals()
-        save_encoding_Data(face_encoding)
-        save_Face()
-        resize_Face()
-        save_Data()
+            attendance(name)
 
+        face_Frame_Visuals()
+        #save_encoding_Data(face_encoding)
+        save_Face()
+        #resize_Face()
+        save_Data()
+  
 
     cv2.imshow('webcam', frame)
 
