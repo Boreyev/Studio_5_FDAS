@@ -6,7 +6,6 @@ import cv2
 import os
 from datetime import datetime
 import sqlite3
-import threading
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
@@ -38,11 +37,20 @@ def resize_Face(): #Not in use as of now, work in progress
     return save_Img_Resize
     
 def save_Data():    #Outputs face detection data to text file
-    lines = [str(nTime), name + ': ' + str(confidence_out)]
+    lines = [str(nTime) + '\n' + name + ': ' + str(confidence_out)]
     with open('test_data.txt', 'a') as f:
         for line in lines:
             f.write(line)
             f.write('\n')
+            f.write('\n')
+
+def save_distances():    #Outputs face detection data to text file
+        lines = [str(name) + ' Detected: ' + str(nTime) + '\n' + 'Names: ' + str(img_names) + '\n' + 'Distances: ' + str(face_distances)]
+        with open('test_distances.txt', 'a') as f:
+            for line in lines:
+                f.write(line)
+                f.write('\n')
+                f.write('\n')
 
 def create_db():
     connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
@@ -130,8 +138,9 @@ while True: #Loop to start taking all the frameworks from the camera
     rgb_frame = frame_resize[:, :, ::-1]                     #convertframe to rgb
 
     face_locations = fr.face_locations(rgb_frame, model="hog")                  #check where faces are in the frame, uses hog model (faster but less accurate)
-    face_encodings = fr.face_encodings(rgb_frame, face_locations, model=small)  #detects which faces are in the frame
+    face_encodings = fr.face_encodings(rgb_frame, face_locations, num_jitters=1, model=small)  #detects which faces are in the frame
     numFaces = len(face_encodings)                                              #Number of faces in frame = length of face_encodings array
+
 
     ctime = time.time() #Method to get fps by getting passed time since beginning and end of each loop
     fps= int(1/(ctime-ptime))
@@ -159,6 +168,7 @@ while True: #Loop to start taking all the frameworks from the camera
         save_encoding_Data(face_encoding)
         save_Face()
         save_Data()
+        save_distances()
 
     cv2.imshow('webcam', frame_resize)
 

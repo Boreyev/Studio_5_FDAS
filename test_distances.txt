@@ -1,0 +1,145 @@
+Ike Detected: 23:16:51.748170
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.74232123 0.80926365 0.72962581 0.66069693 0.75756486 0.73116519
+ 0.80197212 0.75187346 0.76943875 0.49815055]
+
+Ike Detected: 23:16:52.244513
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.75468335 0.85122681 0.7441756  0.66361363 0.75428239 0.79801791
+ 0.80471067 0.81001924 0.72635088 0.36728036]
+
+Ike Detected: 23:16:52.731625
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.78875214 0.87858927 0.79223725 0.64804193 0.73144011 0.79362526
+ 0.7981858  0.81896526 0.75446537 0.32190563]
+
+Ike Detected: 23:16:53.311082
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.77178154 0.88465196 0.7983942  0.64558546 0.71242569 0.78724786
+ 0.80160036 0.84145652 0.7444384  0.31981279]
+
+Ike Detected: 23:16:53.904905
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.79041241 0.91997797 0.82568695 0.63287117 0.70008853 0.82057935
+ 0.8029955  0.85956344 0.76559944 0.32091718]
+
+Ike Detected: 23:16:54.498040
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.76563521 0.89609176 0.81409372 0.6383774  0.71521137 0.79776889
+ 0.79952139 0.84759341 0.76214749 0.347468  ]
+
+Ike Detected: 23:16:55.031172
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.77248243 0.88146786 0.79490478 0.6297901  0.71307168 0.8008815
+ 0.78704898 0.83399282 0.73469458 0.30607236]
+
+Ike Detected: 23:16:55.564022
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.78436311 0.87071932 0.79383496 0.63293939 0.72288059 0.78288132
+ 0.79167278 0.82758501 0.74373469 0.31753335]
+
+Ike Detected: 23:16:56.112769
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.79707524 0.87919246 0.80351643 0.65127924 0.72771086 0.79048144
+ 0.78948913 0.8355591  0.75874548 0.30718474]
+
+Ike Detected: 23:16:56.922494
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.80258894 0.87228694 0.79931643 0.64254    0.72012906 0.81558261
+ 0.79073996 0.84066587 0.73842902 0.30941241]
+
+Ike Detected: 23:16:57.490632
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.77505271 0.87290641 0.80229073 0.64090556 0.7194496  0.79877117
+ 0.79401085 0.83391858 0.74199422 0.33739012]
+
+Ike Detected: 23:16:58.051526
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.76101494 0.85639536 0.78640622 0.65897447 0.72314523 0.81574869
+ 0.7904783  0.85968309 0.76313278 0.34684163]
+
+Ike Detected: 23:16:58.559425
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.78899618 0.86418162 0.78749688 0.6384775  0.71527084 0.79330904
+ 0.76810742 0.82050691 0.75198676 0.30397211]
+
+Ike Detected: 23:16:59.076045
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.77742801 0.85376276 0.78117485 0.64850363 0.72513279 0.79377229
+ 0.78723902 0.83275482 0.73270969 0.31962091]
+
+Ike Detected: 23:16:59.583738
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.77558806 0.85218747 0.78599578 0.63218765 0.71934648 0.79227876
+ 0.78681654 0.82180852 0.7189087  0.33394518]
+
+Ike Detected: 23:17:00.105849
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.76501734 0.87054041 0.79117649 0.63097291 0.70611821 0.80703037
+ 0.78428076 0.83504152 0.72331969 0.32538385]
+
+Ike Detected: 23:17:00.612044
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.77295082 0.87761653 0.79216111 0.63124862 0.7091702  0.82946145
+ 0.78979189 0.84128101 0.73892518 0.32387197]
+
+Ike Detected: 23:17:01.139088
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.77186035 0.86144111 0.76091107 0.65941351 0.73522722 0.81567641
+ 0.79946983 0.85244907 0.74024547 0.33770149]
+
+Ike Detected: 23:17:01.647719
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.7870148  0.87717603 0.77733236 0.66115084 0.73039148 0.82720964
+ 0.79027925 0.84517887 0.74033963 0.33866897]
+
+Ike Detected: 23:17:02.173839
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.79514005 0.8933428  0.78287234 0.65175831 0.72237615 0.82323834
+ 0.79695046 0.84513786 0.74800957 0.30391517]
+
+Ike Detected: 23:17:02.727633
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.76821437 0.88890146 0.79083256 0.64731708 0.72525057 0.83370175
+ 0.80247375 0.84938883 0.73603745 0.33741194]
+
+Ike Detected: 23:17:03.299333
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.76554694 0.87762996 0.77815771 0.63647367 0.71638939 0.8099166
+ 0.79696755 0.83495985 0.73634183 0.32279979]
+
+Ike Detected: 23:17:03.808460
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.76255882 0.85455477 0.75417143 0.64628949 0.72407177 0.8253954
+ 0.7867625  0.82996787 0.72369433 0.3453891 ]
+
+Ike Detected: 23:17:04.317576
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.76772666 0.85958868 0.75300125 0.6532644  0.72720175 0.81943002
+ 0.78351747 0.8371775  0.71490549 0.35679362]
+
+Ike Detected: 23:17:04.950720
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.77645204 0.87237864 0.76781595 0.64026365 0.70518572 0.81164812
+ 0.76507084 0.82132348 0.72533907 0.31373239]
+
+Ike Detected: 23:17:05.572863
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.76321335 0.84375872 0.77021835 0.64018759 0.72034136 0.75258311
+ 0.78858783 0.83769288 0.71441767 0.34294388]
+
+Ike Detected: 23:17:06.167997
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.73100627 0.86516489 0.79984099 0.6545015  0.699698   0.80454964
+ 0.76730767 0.84506675 0.75765127 0.38220708]
+
+Ike Detected: 23:17:06.669168
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.75734193 0.86014073 0.78304513 0.66901071 0.75072184 0.80554812
+ 0.81605323 0.85537218 0.74726414 0.37983434]
+
+Ike Detected: 23:17:07.174086
+Names: ['Belle', 'Human1', 'Human2', 'Human3', 'Human4', 'Human5', 'Human6', 'Human7', 'Human8', 'Ike']
+Distances: [0.78243061 0.88261187 0.80089772 0.64720184 0.71163052 0.81998928
+ 0.78349068 0.8593677  0.75323955 0.34492453]
+
