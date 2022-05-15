@@ -23,8 +23,13 @@ def save_Face():    #Each time face is detected, save image with name and confid
             height = bottom - top + 15   #Define height / width
             width = right - left
             crop_Face = frame[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
-            save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face) 
+            save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face)
     return save_Image
+
+def insert_face_img_db():
+        connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
+        cursor = connection.cursor() #create cursor to interact with sql commands 
+        cursor.execute("insert into image values(?,?)", (i, save_Image))
 
 # def resize_Face(): #Not in use as of now, work in progress 
 #     img_Height = 100
@@ -47,12 +52,6 @@ def save_Data():    #Outputs face detection data to text file
             f.write(line)
             f.write('\n')
 
-def create_db():
-    connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
-    cursor = connection.cursor() #create cursor to interact with sql commands
-    cursor.execute("CREATE TABLE attendance(name string, datetime string)")
-    connection.commit()
-
 def add_attendance(name, arrival_time):
     connection = sqlite3.connect('fdas.sqlite')
     cursor = connection.cursor()
@@ -65,7 +64,7 @@ def attendance(name):
         for line in attendanceData: #goes through attendance.csv to check which students are present
             entry = line.split(',') 
             roll.append(entry[0]) 
-        if name != "Unknown": #if name is already not present...
+        if name not in roll and name != "Unknown": #if name is already not present...
             curTime = datetime.now()
             arrival_time = curTime.strftime('%H:%M:%S')
             f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
@@ -115,7 +114,7 @@ path = "face_dataset"
 images = [] #list of all imgs we are importing
 img_names = [] #list of img names
 img_list = os.listdir(path) #returns list of img names with .jpg extension
-create_db()
+
 for img in img_list:
     cur_img = cv2.imread(f'{path}/{img}')
     images.append(cur_img)

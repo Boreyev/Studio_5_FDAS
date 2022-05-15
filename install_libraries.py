@@ -1,16 +1,13 @@
 import subprocess
-import sys
-import os
 
-def venv():
-    subprocess.run([sys.executable, "python", "-m", "venv", "venv"])
-    subprocess.run([sys.executable, "venv/", "scripts/", "Activate"])
+def create_venv():
+    subprocess.run("python -m venv venv")
 
 def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+    subprocess.run("pip install " + package)
 
-venv()
+create_venv()
+install('numpy')
 install('cmake')
 install('face_recognition')
-install('numpy')
 install('opencv-python')
