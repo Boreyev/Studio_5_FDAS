@@ -6,14 +6,11 @@ import cv2
 import os
 from datetime import datetime
 import sqlite3
+import threading
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 ptime = 0 #Time = 0
-
-def make_480p():    #Adjusts the camera input to 480p, saves resources. CANNOT BE UPSCALED!
-    webcam.set(3, 640)
-    webcam.set(4, 480)
 
 def save_Face():    #Each time face is detected, save image with name and confidence level
     for i in range(5):
@@ -23,7 +20,7 @@ def save_Face():    #Each time face is detected, save image with name and confid
             height = bottom - top + 15   #Define height / width
             width = right - left
             crop_Face = frame_resize[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
-            save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face) 
+            save_Image = cv2.imwrite('live_dataset/'+name+'/'+name+str(i)+'.jpg',crop_Face) 
     return save_Image
 
 def resize_Face(): #Not in use as of now, work in progress 
@@ -116,7 +113,7 @@ path = "face_dataset"
 images = [] #list of all imgs we are importing
 img_names = [] #list of img names
 img_list = os.listdir(path) #returns list of img names with .jpg extension
-create_db()
+
 for img in img_list:
     cur_img = cv2.imread(f'{path}/{img}')
     images.append(cur_img)
@@ -161,7 +158,6 @@ while True: #Loop to start taking all the frameworks from the camera
         face_Frame_Visuals()
         save_encoding_Data(face_encoding)
         save_Face()
-        resize_Face()
         save_Data()
 
     cv2.imshow('webcam', frame_resize)
