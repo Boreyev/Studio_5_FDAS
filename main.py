@@ -26,23 +26,24 @@ def save_Face():    #Each time face is detected, save image with name and confid
             crop_Face = frame[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
             save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face)
             insert_face_img_db(save_Image)
-    return save_Image
+        return save_Image
 
 def insert_face_img_db(save_Image):
     connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
     cursor = connection.cursor() #create cursor to interact with sql commands 
-    img_id = random.randint(0,12345)
+    img_id = random.randint(0,123456)
     student_id = 0
-    if name == 'Belle':
-        student_id = 101
-    if name == 'Ike':
-        student_id = 102
-    if name == 'John Cena':
-        student_id = 103
-    if name == 'John Key':
-        student_id = 104
-    if name == 'Queen':
-        student_id = 105
+    match name:
+        case 'Belle':
+            student_id = 101
+        case 'Ike':
+            student_id = 102
+        case 'John Cena':
+            student_id = 103
+        case 'John Key':
+            student_id = 104
+        case 'Queen':
+            student_id = 105
     cursor.execute("insert into image values(?,?,?)", (img_id, student_id, save_Image))
     connection.commit()
 
@@ -68,19 +69,38 @@ def save_Data():    #Outputs face detection data to text file
             f.write(line)
             f.write('\n')
 
-def attendance(name):
+def insert_attendance(name, arrival_time):
     connection = sqlite3.connect('fdas.sqlite')
     class_id = ""
-    if name != 'unknown': #if name is already not present...
-        curTime = datetime.now()
-        arrival_time = curTime.strftime('%H:%M:%S')
-        if arrival_time > classtime:
-            class_id = "IN510"
-            connection.execute("insert into attendance values(?,?,?)", (class_id, name, arrival_time))
-            connection.commit()
-        elif arrival_time < classtime:
-            connection.execute("insert into attendance values(?,?,?)", (class_id, name, "ABSENT"))
-            connection.commit()
+    classtimes = ['8:00:00', '10:00:00', '13:00:00', '15:00:00', '17:00:00']
+    #if name != 'unknown': #if name is already not present...
+        #curTime = datetime.now()
+        #arrival_time = curTime.strftime('%H:%M:%S')
+    if classtimes[0] < arrival_time < classtimes[1]:
+        class_id = 10
+    elif classtimes[1] < arrival_time < classtimes[2]:
+        class_id = 20
+    elif classtimes[2] < arrival_time < classtimes[3]:
+        class_id = 30
+    elif classtimes[3] < arrival_time < classtimes[4]:
+        class_id = 40
+    connection.execute("insert into attendance values(?,?,?)", (class_id, name, arrival_time))
+    connection.commit()
+
+def check_attendance(name):
+    with open('attendance.csv', 'r+') as f: #r+ allows reading and writing
+        attendanceData = f.readlines() #read all lines currently in data to avoid repeats
+        roll = [] #empty list for all names that are found
+        for line in attendanceData: #goes through attendance.csv to check which students are present
+            entry = line.split(',') 
+            roll.append(entry[0]) 
+        if name not in roll: #if name is already not present...
+            curTime = datetime.now()
+            arrival_time = curTime.strftime('%H:%M:%S')
+            f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
+            insert_attendance(name, arrival_time)
+
+
 
 
 def frame_Visuals():
@@ -132,7 +152,7 @@ for img in img_list:
     img_names.append(os.path.splitext(img)[0]) #removes extension part of file  
 known_encodings = encodings(images)
 
-classtime = '10:00:00'
+
 
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
@@ -167,7 +187,7 @@ while True: #Loop to start taking all the frameworks from the camera
 
         if matches[best_match_index]:
             name = img_names[best_match_index]
-            attendance(name)
+            check_attendance(name)
 
         face_Frame_Visuals()
         #save_encoding_Data(face_encoding)

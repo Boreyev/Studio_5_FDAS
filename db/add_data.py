@@ -40,25 +40,25 @@ def add_paper():
 def add_class():
     connection.execute('''INSERT INTO class(
    class_id, datetime, paper_id) VALUES 
-   (10, 'Monday 1pm', 'IN510')''')
+   (10, '8:00:00', 'IN510')''')
     #connection.execute('''INSERT INTO class(
    #class_id, datetime, paper_id) VALUES 
   # (20, 'Tuesday 1pm', 'IN510')''')
     connection.execute('''INSERT INTO class(
    class_id, datetime, paper_id) VALUES 
-   (30, 'Monday 10am', 'IN511')''')
+   (20, '10:00:00', 'IN511')''')
 #    connection.execute('''INSERT INTO class(
  #  class_id, datetime, paper_id) VALUES 
   # (40, 'Tuesday 10am', 'IN511')''')
     connection.execute('''INSERT INTO class(
    class_id, datetime, paper_id) VALUES 
-   (50, 'Wednesday 1pm', 'IN610')''')
+   (30, '13:00:00', 'IN610')''')
    # connection.execute('''INSERT INTO class(
    #class_id, datetime, paper_id) VALUES 
   # (60, 'Thursday 1pm', 'IN610')''')
     connection.execute('''INSERT INTO class(
    class_id, datetime, paper_id) VALUES 
-   (70, 'Thursday 10am', 'IN628')''')
+   (40, '15:00:00', 'IN628')''')
    # connection.execute('''INSERT INTO class(
    #class_id, datetime, paper_id) VALUES 
    #(80, 'Friday 1pm', 'IN628')''')
