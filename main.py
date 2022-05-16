@@ -12,10 +12,6 @@ webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 ptime = 0 #Time = 0
 
-def make_480p():    #Adjusts the camera input to 480p, saves resources. CANNOT BE UPSCALED!
-    webcam.set(3, 640)
-    webcam.set(4, 480)
-
 def save_Face():    #Each time face is detected, save image with name and confidence level
     for i in range(5):
         if i==5:
@@ -190,7 +186,7 @@ while True: #Loop to start taking all the frameworks from the camera
             check_attendance(name)
 
         face_Frame_Visuals()
-        #save_encoding_Data(face_encoding)
+        save_encoding_Data(face_encoding)
         save_Face()
         #resize_Face()
         #save_Data()
