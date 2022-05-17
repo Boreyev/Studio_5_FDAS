@@ -7,8 +7,6 @@ import os
 from datetime import datetime
 import sqlite3
 import random 
-from PIL import Image
-import glob
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
@@ -28,19 +26,25 @@ def save_Face():    #Each time face is detected, save image with name and confid
 def insert_face_img_db():
     connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
     cursor = connection.cursor() #create cursor to interact with sql commands 
-    img_id = random.randint(0,123456)
+    img_id = random.randint(0,999999)
     student_id = 0
-    match name:
-        case 'Belle':
-            student_id = 101
-        case 'Ike':
-            student_id = 102
-        case 'John Cena':
-            student_id = 103
-        case 'John Key':
-            student_id = 104
-        case 'Queen':
-            student_id = 105
+    query = "select student_id from student"
+    cursor.execute(query)
+    records = cursor.fetchall()
+    for row in records:
+        match name:
+            case 'Belle':
+                student_id = row[0]
+            case 'Ike':
+                student_id = row[1]
+            case 'John Cena':
+                student_id = row[2]
+            case 'John Key':
+                student_id = row[3]
+            case 'Queen':
+                student_id = row[4]
+            case 'Unknown':
+                student_id = 000
     imgPath = 'live_dataset/' + name
     live_img_list = os.listdir(imgPath) #returns list of img names with .jpg extension
     for live_img in live_img_list:
@@ -70,36 +74,63 @@ def save_Data():    #Outputs face detection data to text file
             f.write(line)
             f.write('\n')
 
-def insert_attendance(name, arrival_time):
+def insert_attendance(name, arrival_time, classtimes):
     connection = sqlite3.connect('fdas.sqlite')
-    class_id = ""
-    classtimes = ['8:00:00', '10:00:00', '13:00:00', '15:00:00', '17:00:00']
-    #if name != 'unknown': #if name is already not present...
-        #curTime = datetime.now()
-        #arrival_time = curTime.strftime('%H:%M:%S')
+    class_id = 0
     if classtimes[0] < arrival_time < classtimes[1]:
         class_id = 10
-    elif classtimes[1] < arrival_time < classtimes[2]:
+    if classtimes[0] + '00:10:00' < arrival_time < classtimes[1]:
+        class_id = 10
+        arrival_time = 'LATE'
+        late_msg()
+
+    if classtimes[1] < arrival_time < classtimes[2]:
         class_id = 20
-    elif classtimes[2] < arrival_time < classtimes[3]:
+    if classtimes[1] + '00:10:00' < arrival_time < classtimes[2]:
+        class_id = 20
+        arrival_time = 'LATE'
+        late_msg()
+
+    if classtimes[2] < arrival_time < classtimes[3]:
         class_id = 30
-    elif classtimes[3] < arrival_time < classtimes[4]:
+    if classtimes[2] + '00:10:00' < arrival_time < classtimes[3]:
+        class_id = 30
+        arrival_time = 'LATE'
+        late_msg()
+
+    if classtimes[3] < arrival_time < classtimes[4]:
         class_id = 40
+    if classtimes[3] + '00:10:00' < arrival_time:
+        class_id = 40
+        arrival_time = 'LATE'
+        late_msg()
+
     connection.execute("insert into attendance values(?,?,?)", (class_id, name, arrival_time))
     connection.commit()
 
+def late_msg():
+        cv2.putText(frame,                                                            #Displays number of faces
+                f'YOU ARE LATE!!',
+                (10, 75), 
+                font, 1.0, 
+                (0, 0, 255), 
+                2, 
+                2)
+
 def check_attendance(name):
+    classtimes = ['8:00:00', '10:00:00', '13:00:00', '15:00:00', '17:00:00']
     with open('attendance.csv', 'r+') as f: #r+ allows reading and writing
         attendanceData = f.readlines() #read all lines currently in data to avoid repeats
         roll = [] #empty list for all names that are found
         for line in attendanceData: #goes through attendance.csv to check which students are present
             entry = line.split(',') 
             roll.append(entry[0]) 
-        if name not in roll: #if name is already not present...
+        if name != 'Unknown': #if name is already not present...
             curTime = datetime.now()
             arrival_time = curTime.strftime('%H:%M:%S')
             f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
-            insert_attendance(name, arrival_time)
+            insert_attendance(name, arrival_time, classtimes)
+
 
 
 
