@@ -11,7 +11,7 @@ PRIMARY KEY(student_id))""")
 cursor.execute("""CREATE TABLE image
 (img_id int NOT NULL,
 student_id int,
-image blob,
+image string,
 PRIMARY KEY(img_id),
 FOREIGN KEY(student_id) REFERENCES student(student_id))""")
 cursor.execute("""CREATE TABLE paper

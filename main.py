@@ -7,6 +7,8 @@ import os
 from datetime import datetime
 import sqlite3
 import random 
+from PIL import Image
+import glob
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
@@ -21,10 +23,9 @@ def save_Face():    #Each time face is detected, save image with name and confid
             width = right - left
             crop_Face = frame[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
             save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face)
-            insert_face_img_db(save_Image)
         return save_Image
 
-def insert_face_img_db(save_Image):
+def insert_face_img_db():
     connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
     cursor = connection.cursor() #create cursor to interact with sql commands 
     img_id = random.randint(0,123456)
@@ -40,8 +41,12 @@ def insert_face_img_db(save_Image):
             student_id = 104
         case 'Queen':
             student_id = 105
-    cursor.execute("insert into image values(?,?,?)", (img_id, student_id, save_Image))
-    connection.commit()
+    imgPath = 'live_dataset/' + name
+    live_img_list = os.listdir(imgPath) #returns list of img names with .jpg extension
+    for live_img in live_img_list:
+        cur_live_img = cv2.imread(f'{imgPath}/{live_img}')
+        cursor.execute("insert into image values(?,?,?)", (img_id, student_id, cur_live_img))
+        connection.commit()
 
 
 # def resize_Face(): #Not in use as of now, work in progress 
@@ -188,6 +193,7 @@ while True: #Loop to start taking all the frameworks from the camera
         face_Frame_Visuals()
         save_encoding_Data(face_encoding)
         save_Face()
+        insert_face_img_db()
         #resize_Face()
         #save_Data()
   
