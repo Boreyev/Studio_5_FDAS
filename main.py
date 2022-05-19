@@ -1,42 +1,41 @@
 from cgitb import small
+from datetime import datetime
+from kivy.app import App
+from kivy.uix.widget import Widget
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.image import Image
+from kivy.clock import Clock
+from kivy.graphics.texture import Texture
 import time
 import face_recognition as fr
 import numpy as np
-import tkinter
-from tkinter import * 
-from tkinter.ttk import *
-from PIL import Image, ImageTk
 import cv2
 import os
-from datetime import datetime
 import sqlite3
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 ptime = 0 #Time = 0
+class CamApp(App):
 
-# Create an instance of TKinter Window or frame
-app = Tk()
+    def build(self):
+        self.img1=Image()
+        layout = BoxLayout()
+        layout.add_widget(self.img1)
+        Clock.schedule_interval(self.update, 1.0/33.0)
+        return layout
 
-# Set the size of the window
-app.geometry("700x350")
+    def update(self, dt):
+        # display image from cam in opencv window
+        # convert it to texture
+        buf1 = cv2.flip(frame_resize, 0)
+        buf = buf1.tostring()
+        texture1 = Texture.create(size=(frame_resize.shape[1], frame_resize.shape[0]), colorfmt='bgr') 
+        #if working on RASPBERRY PI, use colorfmt='rgba' here instead, but stick with "bgr" in blit_buffer. 
+        texture1.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+        # display image from the texture
+        self.img1.texture = texture1
 
-# Create a Label to capture the Video frames
-label =Label(app)
-label.grid(row=0, column=0)
-text = Text(app)
-
-# Define function to show frame
-def video_stream():
-   # Get the latest frame and convert into Image
-   cv2image= cv2.cvtColor(webcam.read()[1],cv2.COLOR_BGR2RGB)
-   img = Image.fromarray(cv2image)
-   # Convert image to PhotoImage
-   imgtk = ImageTk.PhotoImage(image = img)
-   label.imgtk = imgtk
-   label.configure(image=imgtk)
-   # Repeat after an interval to capture continiously
-   label.after(20, video_stream)
 
 def save_Face():    #Each time face is detected, save image with name and confidence level
     for i in range(5):
@@ -196,16 +195,8 @@ while True: #Loop to start taking all the frameworks from the camera
         save_distances()
 
     frame_Visuals()
-    cv2.imshow('webcam', frame_resize)
-    cv2.resizeWindow('webcam', 400, 400)
-    #video_stream()
-    #app.mainloop()
+    CamApp().run()
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-webcam.release()
-cv2.destroyAllWindows()
 
 ## SOURCES ## 
 #Small parts of the initial functionality of this code is derived from the repository found below:
