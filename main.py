@@ -1,41 +1,38 @@
 from cgitb import small
-from datetime import datetime
-from kivy.app import App
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.image import Image
-from kivy.clock import Clock
-from kivy.graphics.texture import Texture
 import time
+from unicodedata import name
 import face_recognition as fr
 import numpy as np
 import cv2
 import os
+from datetime import datetime
 import sqlite3
+import cvui
+import sys
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+import cv2
+
+WINDOW_NAME = 'FDAS'
+SETTINGS_WINDOW_NAME = 'Settings'
+cvui.init(WINDOW_NAME)
+cvui.init(SETTINGS_WINDOW_NAME)
+
+#Checkbox states
+settingsFrame = np.zeros((150, 250, 3), np.uint8)
+checked = [False]
+checked1 = [False]
+checked2 = [False]
+checked3 = [False]
+#TrackBar Value
+trackbarValue = [0.5] 
+frameWidth = 0.5
+frameHeight = 0.5
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 ptime = 0 #Time = 0
-class CamApp(App):
-
-    def build(self):
-        self.img1=Image()
-        layout = BoxLayout()
-        layout.add_widget(self.img1)
-        Clock.schedule_interval(self.update, 1.0/33.0)
-        return layout
-
-    def update(self, dt):
-        # display image from cam in opencv window
-        # convert it to texture
-        buf1 = cv2.flip(frame_resize, 0)
-        buf = buf1.tostring()
-        texture1 = Texture.create(size=(frame_resize.shape[1], frame_resize.shape[0]), colorfmt='bgr') 
-        #if working on RASPBERRY PI, use colorfmt='rgba' here instead, but stick with "bgr" in blit_buffer. 
-        texture1.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
-        # display image from the texture
-        self.img1.texture = texture1
-
 
 def save_Face():    #Each time face is detected, save image with name and confidence level
     for i in range(5):
@@ -158,7 +155,7 @@ known_encodings = encodings(images)
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
 
-    frame_resize = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)    #Resizes frame by adjusting frame height and width.
+    frame_resize = cv2.resize(frame, (0, 0), fx=frameWidth, fy=frameHeight)    #Resizes frame by adjusting frame height and width.
                                                                 #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
                                                                 #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
     rgb_frame = frame_resize[:, :, ::-1]                     #convertframe to rgb
@@ -167,7 +164,6 @@ while True: #Loop to start taking all the frameworks from the camera
     face_encodings = fr.face_encodings(rgb_frame, face_locations, num_jitters=1, model=small)  #detects which faces are in the frame
     numFaces = len(face_encodings)                                              #Number of faces in frame = length of face_encodings array
 
-
     ctime = time.time() #Method to get fps by getting passed time since beginning and end of each loop
     fps= int(1/(ctime-ptime))
     ptime = ctime
@@ -175,7 +171,7 @@ while True: #Loop to start taking all the frameworks from the camera
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
 
         nTime = datetime.now().time()
-        matches = fr.compare_faces(known_encodings, face_encoding)
+        matches = fr.compare_faces(known_encodings, face_encoding, tolerance=trackbarValue)
         name = "Unknown"
 
         face_distances = fr.face_distance(known_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
@@ -186,17 +182,46 @@ while True: #Loop to start taking all the frameworks from the camera
 
         if matches[best_match_index]:
             name = img_names[best_match_index]
-        
+    
         attendance(name)
-        face_Frame_Visuals()
-        save_encoding_Data(face_encoding)
-        save_Face()
-        save_Data()
-        save_distances()
 
-    frame_Visuals()
-    CamApp().run()
+        if checked1 == [False]:
+            face_Frame_Visuals()
+        else:
+            pass
 
+        if checked2 == [True]:
+            save_encoding_Data(face_encoding)
+            save_Face()
+            save_Data()
+            save_distances()
+        else:
+            pass
+
+    cvui.text(settingsFrame, 10, 70, 'Tolerance Slider:', 0.4, 0xffffff)
+    cvui.trackbar(settingsFrame, 10, 90, 200, trackbarValue, 0.0, 1)
+    cvui.checkbox(settingsFrame, 10, 50, 'Hide Information', checked)
+    cvui.checkbox(settingsFrame, 10, 30, 'Hide Box', checked1)
+    cvui.checkbox(settingsFrame, 10, 10, 'Save Data', checked2)
+    cvui.checkbox(frame_resize, 20, 150, 'Settings', checked3)
+    cvui.update()
+
+    if checked == [False]:
+        frame_Visuals()
+    else:
+        pass
+
+    if checked3 == [True]:
+        pass
+
+    cv2.imshow(SETTINGS_WINDOW_NAME, settingsFrame)
+    cv2.imshow(WINDOW_NAME, frame_resize)
+
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+webcam.release()
+cv2.destroyAllWindows()
 
 ## SOURCES ## 
 #Small parts of the initial functionality of this code is derived from the repository found below:
@@ -206,3 +231,4 @@ while True: #Loop to start taking all the frameworks from the camera
 #Append to text file: https://www.pythontutorial.net/python-basics/python-write-text-file/
 #face_recognition documentation: https://face-recognition.readthedocs.io/en/latest/face_recognition.html
 #Face cropping logic: https://www.geeksforgeeks.org/cropping-faces-from-images-using-opencv-python/
+#CVUI: https://github.com/Dovyski/cvui/blob/master/example/src/main-app/main-app.py
