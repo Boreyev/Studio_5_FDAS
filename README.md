@@ -22,6 +22,9 @@ pip install face_recognition
 ``` 
 pip install opencv-python
 ```
+``` 
+pip install cvui
+```
 
 ### Note:
 you may need to run
