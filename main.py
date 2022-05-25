@@ -8,31 +8,28 @@ import os
 from datetime import datetime
 import sqlite3
 import cvui
-import sys
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
 import cv2
 
-WINDOW_NAME = 'FDAS'
-SETTINGS_WINDOW_NAME = 'Settings'
-cvui.init(WINDOW_NAME)
-cvui.init(SETTINGS_WINDOW_NAME)
-
+#Window defs
+MAIN_WINDOW = 'FDAS'
+cvui.init(MAIN_WINDOW)
+mainFrame = np.zeros((180, 200, 3), np.uint8)   #Window dims
+mainFrame[:] = (64, 64, 64) #Match mainframe with default CV2 BG
 #Checkbox states
-settingsFrame = np.zeros((150, 250, 3), np.uint8)
 checked = [False]
 checked1 = [False]
 checked2 = [False]
 checked3 = [False]
+checked4 = [False]
 #TrackBar Value
 trackbarValue = [0.5] 
 frameWidth = 0.5
 frameHeight = 0.5
-
+#OpenCV variables
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 ptime = 0 #Time = 0
+padding = cv2.imread('GUI_Res/Padding.png')
 
 def save_Face():    #Each time face is detected, save image with name and confidence level
     for i in range(5):
@@ -99,31 +96,12 @@ def attendance(name):
             f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
             add_attendance(name, arrival_time)
 
-
-def frame_Visuals():
-    cv2.rectangle(frame_resize, (0, 0), (100 + 150, 10 + 10), (19, 155, 35), cv2.FILLED) #Add box behind text for visibility
-    cv2.putText(frame_resize,                                                            #Displays FPS 
-                f'FPS:{fps}',
-                (5, 15), 
-                font, 0.5, 
-                (255, 255, 255), 
-                2, 
-                2)
-    cv2.putText(frame_resize,                                                            #Displays number of faces
-                f'Number of faces: {numFaces}',
-                (70, 15), 
-                font, 0.5, 
-                (255, 255, 255), 
-                2, 
-                2)
-
 def face_Frame_Visuals():
-        cv2.rectangle(frame_resize, (left, top), (right, bottom), (19, 155, 35), 2)                 #Displays frame around detected face
-        cv2.rectangle(frame_resize, (left, bottom +17), (right, bottom), (19, 155, 35), cv2.FILLED) #Displays box for name visibility
-        cv2.putText(frame_resize, name, (left +3, bottom +15), font, 0.3, (255, 255, 255), 1)        #Displays name
-        cv2.putText(frame_resize,f'{confidence}', (left +3, bottom +8), font, 0.3, (255, 255, 255), 1) #Put confidence interval above frame, split string to display as percentage. 
+        cv2.rectangle(Verti, (left, top), (right, bottom), (55, 158, 58), 2)                 #Displays frame around detected face
+        cv2.rectangle(Verti, (left, bottom +17), (right, bottom), (55, 158, 58), cv2.FILLED) #Displays box for name visibility
+        cv2.putText(Verti, name, (left +3, bottom +15), font, 0.3, (255, 255, 255), 1)        #Displays name
+        cv2.putText(Verti,f'{confidence}', (left +3, bottom +8), font, 0.3, (255, 255, 255), 1) #Put distance above frame, split string to display as percentage. 
      
-
 def save_encoding_Data(face_encoding):    #Outputs face detection data to text file
      lines = [str(face_encoding)]
      with open('encoding_data.txt', 'a') as f:
@@ -131,7 +109,7 @@ def save_encoding_Data(face_encoding):    #Outputs face detection data to text f
              f.write(line)
              f.write('\n')
 
-def encodings(images):
+def encodings(images):  #Documenting Required
     list_of_encodings = []
     for img in images:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -156,10 +134,13 @@ while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
 
     frame_resize = cv2.resize(frame, (0, 0), fx=frameWidth, fy=frameHeight)    #Resizes frame by adjusting frame height and width.
-                                                                #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
-                                                                #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
-    rgb_frame = frame_resize[:, :, ::-1]                     #convertframe to rgb
-
+                                                                               #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
+                                                                               #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
+    rgb_frame = frame_resize[:, :, ::-1]                        #convertframe to rgb
+    
+    Hori = np.concatenate((frame_resize, mainFrame), axis=1)    #Merge settings and webcam frame
+    Verti = np.concatenate((Hori, padding), axis=0)             #Add bottom padding
+   
     face_locations = fr.face_locations(rgb_frame, model="hog")                  #check where faces are in the frame, uses hog model (faster but less accurate)
     face_encodings = fr.face_encodings(rgb_frame, face_locations, num_jitters=1, model=small)  #detects which faces are in the frame
     numFaces = len(face_encodings)                                              #Number of faces in frame = length of face_encodings array
@@ -168,9 +149,11 @@ while True: #Loop to start taking all the frameworks from the camera
     fps= int(1/(ctime-ptime))
     ptime = ctime
 
+    #Loop through each encoding in DB
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
-
+        
         nTime = datetime.now().time()
+
         matches = fr.compare_faces(known_encodings, face_encoding, tolerance=trackbarValue)
         name = "Unknown"
 
@@ -185,11 +168,13 @@ while True: #Loop to start taking all the frameworks from the camera
     
         attendance(name)
 
+        #If frame box checked, display face_frame visuals
         if checked1 == [False]:
             face_Frame_Visuals()
         else:
             pass
 
+        #If save data box checked, save data    
         if checked2 == [True]:
             save_encoding_Data(face_encoding)
             save_Face()
@@ -197,29 +182,44 @@ while True: #Loop to start taking all the frameworks from the camera
             save_distances()
         else:
             pass
+    
+    #If Settiing box checked, resize frame to display settings
+    if checked3 == [True]:
+        cv2.resizeWindow(MAIN_WINDOW, 540, 210)
+    else:
+        cv2.resizeWindow(MAIN_WINDOW, 320, 210)
 
-    cvui.text(settingsFrame, 10, 70, 'Tolerance Slider:', 0.4, 0xffffff)
-    cvui.trackbar(settingsFrame, 10, 90, 200, trackbarValue, 0.0, 1)
-    cvui.checkbox(settingsFrame, 10, 50, 'Hide Information', checked)
-    cvui.checkbox(settingsFrame, 10, 30, 'Hide Box', checked1)
-    cvui.checkbox(settingsFrame, 10, 10, 'Save Data', checked2)
-    cvui.checkbox(frame_resize, 20, 150, 'Settings', checked3)
-    cvui.update()
-
+    #If info box checked, display info
     if checked == [False]:
-        frame_Visuals()
+        cvui.text(Verti, 5, 182, f'FPS:{fps}', 0.4, 0xcccccc)
+        cvui.text(Verti, 70, 182, f'Number of faces: {numFaces}', 0.4, 0xcccccc)
+        cvui.text(Verti, 5, 195, f'Last Detected: {name}. ', 0.4, 0xcccccc)
     else:
         pass
 
-    if checked3 == [True]:
+    #If pause box checked, pause system, requires holddown of any key to uncheck box (FIX)
+    if checked4 == [True]:
+        cv2.waitKey()
+    else:
         pass
 
-    cv2.imshow(SETTINGS_WINDOW_NAME, settingsFrame)
-    cv2.imshow(WINDOW_NAME, frame_resize)
-
-
+    #Display Visual Info (Settings)
+    cvui.checkbox(Verti, 10, 10, 'Pause', checked4)
+    cvui.checkbox(Verti, 210, 181, 'Settings', checked3)
+    cvui.text(Verti, 340, 5, 'Settings:', 0.6, 0xcccccc)
+    cvui.checkbox(Verti, 335, 30, 'Save Data', checked2)
+    cvui.checkbox(Verti, 335, 50, 'Hide Box', checked1)
+    cvui.checkbox(Verti, 335, 70, 'Hide Information', checked)
+    cvui.text(Verti, 360, 95, 'Tolerance Threshold:', 0.4, 0xcccccc)
+    cvui.trackbar(Verti, 325, 110, 200, trackbarValue, 0.0, 1)
+    
+    cvui.update()   #Cvui needs to be updated before performing any cv2 actions
+    cv2.imshow(MAIN_WINDOW, Verti) 
+    
+    #Destroy window if 'q' pressed. (Change to close on 'X' click)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+
 webcam.release()
 cv2.destroyAllWindows()
 
@@ -232,3 +232,10 @@ cv2.destroyAllWindows()
 #face_recognition documentation: https://face-recognition.readthedocs.io/en/latest/face_recognition.html
 #Face cropping logic: https://www.geeksforgeeks.org/cropping-faces-from-images-using-opencv-python/
 #CVUI: https://github.com/Dovyski/cvui/blob/master/example/src/main-app/main-app.py
+#Single Window solution: https://www.geeksforgeeks.org/how-to-display-multiple-images-in-one-window-using-opencv-python/
+
+#Dev Notes:
+    #Will be worth refractoring code, file for all defs, file for all visual outputs. Keep def calls and logic in Main.py
+    #Pause functionality needs polishing
+    #Need to increase efficiency on main for loop
+    #Better documentation is required
