@@ -19,38 +19,33 @@ def save_Face():    #Each time face is detected, save image with name and confid
         elif i == 0 or 1 or 2 or 3 or 4:
             height = bottom - top + 15   #Define height / width
             width = right - left
-            crop_Face = frame[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face. 
-            save_Image = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg',crop_Face)
-        return save_Image
+            crop_Face = frame_resize[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face.
+            save_Image = cv2.imwrite('live_dataset/'+name+'/'+name+str(i)+'.jpg',crop_Face)
+    return save_Image
 
-def insert_face_img_db():
+def backup_live_img():
     connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
-    cursor = connection.cursor() #create cursor to interact with sql commands 
-    img_id = random.randint(0,999999)
-    student_id = 0
-    query = "select student_id from student"
-    cursor.execute(query)
-    records = cursor.fetchall()
-    for row in records:
-        match name:
-            case 'Belle':
-                student_id = row[0]
-            case 'Ike':
-                student_id = row[1]
-            case 'John Cena':
-                student_id = row[2]
-            case 'John Key':
-                student_id = row[3]
-            case 'Queen':
-                student_id = row[4]
-            case 'Unknown':
-                student_id = 000
-    imgPath = 'live_dataset/' + name
-    live_img_list = os.listdir(imgPath) #returns list of img names with .jpg extension
-    for live_img in live_img_list:
-        cur_live_img = cv2.imread(f'{imgPath}/{live_img}')
-        cursor.execute("insert into image values(?,?,?)", (img_id, student_id, cur_live_img))
-        connection.commit()
+    known_names = ["Belle", "Ike", "Unknown"]
+    known_student_id = [101, 102, 0]
+    path = "live_dataset"
+    img_list = os.listdir(path) #returns list of img names with .jpg extension
+    img_id = random.randint(0,10000)
+    for name in known_names:
+        fullpath = f'{path}/{name}'
+        if name == known_names[0]:
+            student_id = known_student_id[0]
+        if name == known_names[1]:
+            student_id = known_student_id[1]
+        if name == known_names[2]:
+            student_id = known_student_id[2]
+        img_list = os.listdir(fullpath)
+        print(img_list)
+        for img in img_list:
+            cur_img = cv2.imread(f'{fullpath}/{img}')
+            img_id += 5
+            connection.execute("insert into image values(?,?,?)", (img_id, student_id, cur_img))
+            connection.commit()
+
 
 
 # def resize_Face(): #Not in use as of now, work in progress 
@@ -74,63 +69,66 @@ def save_Data():    #Outputs face detection data to text file
             f.write(line)
             f.write('\n')
 
-def insert_attendance(name, arrival_time, classtimes):
+def insert_attendance(classid, name, arrival_time, classtimes, arrival_status):
     connection = sqlite3.connect('fdas.sqlite')
     class_id = 0
+
     if classtimes[0] < arrival_time < classtimes[1]:
-        class_id = 10
+        class_id = classid[0]
+        arrival_status = 'PRESENT'
     if classtimes[0] + '00:10:00' < arrival_time < classtimes[1]:
-        class_id = 10
-        arrival_time = 'LATE'
+        class_id = classid[0]
+        arrival_status = 'LATE'
         late_msg()
 
     if classtimes[1] < arrival_time < classtimes[2]:
-        class_id = 20
+        class_id = classid[1]
+        arrival_status = 'PRESENT'
     if classtimes[1] + '00:10:00' < arrival_time < classtimes[2]:
-        class_id = 20
-        arrival_time = 'LATE'
+        class_id = classid[1]
+        arrival_status = 'LATE'
         late_msg()
 
     if classtimes[2] < arrival_time < classtimes[3]:
-        class_id = 30
+        class_id = classid[2]
+        arrival_status = 'PRESENT'
     if classtimes[2] + '00:10:00' < arrival_time < classtimes[3]:
-        class_id = 30
-        arrival_time = 'LATE'
+        class_id = classid[2]
+        arrival_status = 'LATE'
         late_msg()
 
     if classtimes[3] < arrival_time < classtimes[4]:
-        class_id = 40
-    if classtimes[3] + '00:10:00' < arrival_time:
-        class_id = 40
-        arrival_time = 'LATE'
+        class_id = classid[3]
+        arrival_status = 'PRESENT'
+    if classtimes[3] + '00:10:00' < arrival_time < classtimes[4]:
+        class_id = classid[3]
+        arrival_status = 'LATE'
         late_msg()
 
-    connection.execute("insert into attendance values(?,?,?)", (class_id, name, arrival_time))
+    if arrival_time > classtimes[4]:
+        arrival_status = 'ABSENT'
+        
+    connection.execute("insert into attendance values(?,?,?,?)", (class_id, name, arrival_time, arrival_status))
     connection.commit()
 
 def late_msg():
-        cv2.putText(frame,                                                            #Displays number of faces
-                f'YOU ARE LATE!!',
-                (10, 75), 
-                font, 1.0, 
-                (0, 0, 255), 
-                2, 
-                2)
+    cv2.putText(frame, f'YOU ARE LATE!!', (left +5, bottom +25), font, 0.75, (0, 0, 255), 2)  
 
 def check_attendance(name):
     classtimes = ['8:00:00', '10:00:00', '13:00:00', '15:00:00', '17:00:00']
+    classid = [10, 20, 30, 40]
+    arrival_status = ''
     with open('attendance.csv', 'r+') as f: #r+ allows reading and writing
         attendanceData = f.readlines() #read all lines currently in data to avoid repeats
         roll = [] #empty list for all names that are found
         for line in attendanceData: #goes through attendance.csv to check which students are present
             entry = line.split(',') 
             roll.append(entry[0]) 
-        if name != 'Unknown': #if name is already not present...
+        if name not in roll: #if name is already not present...
             curTime = datetime.now()
             arrival_time = curTime.strftime('%H:%M:%S')
             f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
-            insert_attendance(name, arrival_time, classtimes)
-
+            insert_attendance(classid, name, arrival_time, classtimes, arrival_status)
 
 
 
@@ -170,9 +168,9 @@ def encodings(images):
     for img in images:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         encode_img = fr.face_encodings(img)[0] #
-        list_of_encodings.append(encode_img)
-   
+        list_of_encodings.append(encode_img) 
     return list_of_encodings 
+
 
 path = "face_dataset"
 images = [] #list of all imgs we are importing
@@ -182,7 +180,9 @@ for img in img_list:
     cur_img = cv2.imread(f'{path}/{img}')
     images.append(cur_img)
     img_names.append(os.path.splitext(img)[0]) #removes extension part of file  
-known_encodings = encodings(images)
+known_encodings = encodings(images) # save the encodings and read them from a file ! add ids and date where should be 
+# why saving images ? encode them automatically 
+backup_live_img()
 
 
 
@@ -220,11 +220,12 @@ while True: #Loop to start taking all the frameworks from the camera
         if matches[best_match_index]:
             name = img_names[best_match_index]
             check_attendance(name)
+            save_Face()
 
         face_Frame_Visuals()
-        save_encoding_Data(face_encoding)
-        save_Face()
-        insert_face_img_db()
+        #save_encoding_Data(face_encoding)
+
+
         #resize_Face()
         #save_Data()
   
