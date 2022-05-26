@@ -8,7 +8,6 @@ import os
 from datetime import datetime
 import sqlite3
 import cvui
-import cv2
 
 #Window defs
 MAIN_WINDOW = 'FDAS'
@@ -235,7 +234,7 @@ cv2.destroyAllWindows()
 #Single Window solution: https://www.geeksforgeeks.org/how-to-display-multiple-images-in-one-window-using-opencv-python/
 
 #Dev Notes:
-    #Will be worth refractoring code, file for all defs, file for all visual outputs. Keep def calls and logic in Main.py
+    #Will be worth refactoring code, file for all defs, file for all visual outputs. Keep def calls and logic in Main.py
     #Pause functionality needs polishing
     #Need to increase efficiency on main for loop
     #Better documentation is required
