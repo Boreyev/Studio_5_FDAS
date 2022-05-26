@@ -7,6 +7,8 @@ import os
 from datetime import datetime
 import sqlite3
 import random 
+import pickle
+
 
 webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
@@ -34,9 +36,9 @@ def backup_live_img():
         fullpath = f'{path}/{name}'
         if name == known_names[0]:
             student_id = known_student_id[0]
-        if name == known_names[1]:
+        elif name == known_names[1]:
             student_id = known_student_id[1]
-        if name == known_names[2]:
+        elif name == known_names[2]:
             student_id = known_student_id[2]
         img_list = os.listdir(fullpath)
         print(img_list)
@@ -46,21 +48,6 @@ def backup_live_img():
             connection.execute("insert into image values(?,?,?)", (img_id, student_id, cur_img))
             connection.commit()
 
-
-
-# def resize_Face(): #Not in use as of now, work in progress 
-#     img_Height = 100
-#     img_Width = 100
-#     img_Dim = img_Width, img_Height
-
-#     for i in range(5):
-#         if i==5:
-#             i = 0
-#         elif i == 0 or 1 or 2 or 3 or 4:
-#             img_Name = cv2.imread("live_dataset/"+name+"/"+name+str(i)+'.jpg')
-#             resize_Img = cv2.resize(img_Name, img_Dim, interpolation = cv2.INTER_AREA)
-#             save_Img_Resize = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg', resize_Img)
-#     return save_Img_Resize
     
 def save_Data():    #Outputs face detection data to text file
     lines = [str(nTime), name + ': ' + str(confidence_out)]
@@ -69,55 +56,56 @@ def save_Data():    #Outputs face detection data to text file
             f.write(line)
             f.write('\n')
 
-def insert_attendance(classid, name, arrival_time, classtimes, arrival_status):
-    connection = sqlite3.connect('fdas.sqlite')
-    class_id = 0
+def insert_attendance(name, arrival_time):
+    connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
+    cur = connection.cursor() #create cursor to interact with sql commands
 
-    if classtimes[0] < arrival_time < classtimes[1]:
-        class_id = classid[0]
+    q1 = "select class_id from class"
+    cur.execute(q1)
+    class_id = cur.fetchall()
+    for i in range(len(class_id)):
+        class_id[i] = str(class_id[i][0])
+
+    q2 = "select datetime from class"
+    cur.execute(q2)
+    classtime = cur.fetchall()
+    for i in range(len(classtime)):
+        classtime[i] = str(classtime[i][0])
+
+    if classtime[0] < arrival_time < classtime[1]:
+        classid = class_id[0]
         arrival_status = 'PRESENT'
-    if classtimes[0] + '00:10:00' < arrival_time < classtimes[1]:
-        class_id = classid[0]
+    if classtime[0] + '00:10:00' < arrival_time < classtime[1]:
+        classid = class_id[0]
         arrival_status = 'LATE'
-        late_msg()
 
-    if classtimes[1] < arrival_time < classtimes[2]:
-        class_id = classid[1]
+    if classtime[1] < arrival_time < classtime[2]:
+        classid = class_id[1]
         arrival_status = 'PRESENT'
-    if classtimes[1] + '00:10:00' < arrival_time < classtimes[2]:
-        class_id = classid[1]
+    if classtime[1] + '00:10:00' < arrival_time < classtime[2]:
+        classid = class_id[1]
         arrival_status = 'LATE'
-        late_msg()
 
-    if classtimes[2] < arrival_time < classtimes[3]:
-        class_id = classid[2]
+    if classtime[2] < arrival_time < classtime[3]:
+        classid = class_id[2]
         arrival_status = 'PRESENT'
-    if classtimes[2] + '00:10:00' < arrival_time < classtimes[3]:
-        class_id = classid[2]
+    if classtime[2] + '00:10:00' < arrival_time < classtime[3]:
+        classid = class_id[2]
         arrival_status = 'LATE'
-        late_msg()
 
-    if classtimes[3] < arrival_time < classtimes[4]:
-        class_id = classid[3]
+    if classtime[3] < arrival_time < classtime[4]:
+        classid = class_id[3]
         arrival_status = 'PRESENT'
-    if classtimes[3] + '00:10:00' < arrival_time < classtimes[4]:
-        class_id = classid[3]
+    if classtime[3] + '00:10:00' < arrival_time < classtime[4]:
+        classid = class_id[3]
         arrival_status = 'LATE'
-        late_msg()
-
-    if arrival_time > classtimes[4]:
-        arrival_status = 'ABSENT'
-        
-    connection.execute("insert into attendance values(?,?,?,?)", (class_id, name, arrival_time, arrival_status))
+    connection.execute("insert into attendance values(?,?,?,?)", (classid, name, arrival_time, arrival_status))
     connection.commit()
 
 def late_msg():
     cv2.putText(frame, f'YOU ARE LATE!!', (left +5, bottom +25), font, 0.75, (0, 0, 255), 2)  
 
 def check_attendance(name):
-    classtimes = ['8:00:00', '10:00:00', '13:00:00', '15:00:00', '17:00:00']
-    classid = [10, 20, 30, 40]
-    arrival_status = ''
     with open('attendance.csv', 'r+') as f: #r+ allows reading and writing
         attendanceData = f.readlines() #read all lines currently in data to avoid repeats
         roll = [] #empty list for all names that are found
@@ -128,7 +116,7 @@ def check_attendance(name):
             curTime = datetime.now()
             arrival_time = curTime.strftime('%H:%M:%S')
             f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
-            insert_attendance(classid, name, arrival_time, classtimes, arrival_status)
+            insert_attendance(name, arrival_time)
 
 
 
@@ -154,37 +142,13 @@ def face_Frame_Visuals():
         cv2.rectangle(frame, (left, top), (right, bottom), (19, 155, 35), 2)                 #Displays frame around detected face
         cv2.rectangle(frame, (left, bottom -15), (right, bottom), (19, 155, 35), cv2.FILLED) #Displays box for name visibility
         cv2.putText(frame, name, (left +3, bottom -3), font, 0.5, (255, 255, 255), 1)        #Displays name
-     
-
-def save_encoding_Data(face_encoding):    #Outputs face detection data to text file
-     lines = [str(face_encoding)]
-     with open('encoding_data.txt', 'a') as f:
-         for line in lines:
-             f.write(line)
-             f.write('\n')
-
-def encodings(images):
-    list_of_encodings = []
-    for img in images:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        encode_img = fr.face_encodings(img)[0] #
-        list_of_encodings.append(encode_img) 
-    return list_of_encodings 
 
 
-path = "face_dataset"
-images = [] #list of all imgs we are importing
-img_names = [] #list of img names
-img_list = os.listdir(path) #returns list of img names with .jpg extension
-for img in img_list:
-    cur_img = cv2.imread(f'{path}/{img}')
-    images.append(cur_img)
-    img_names.append(os.path.splitext(img)[0]) #removes extension part of file  
-known_encodings = encodings(images) # save the encodings and read them from a file ! add ids and date where should be 
-# why saving images ? encode them automatically 
+
+    #main  
 backup_live_img()
-
-
+data = pickle.loads(open('encodings/face_enc', "rb").read())
+#names = []
 
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
@@ -207,24 +171,32 @@ while True: #Loop to start taking all the frameworks from the camera
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
 
         nTime = datetime.now().time()
-        matches = fr.compare_faces(known_encodings, face_encoding)
-        faces_to_compare = [known_encodings, face_encoding]
+        matches = fr.compare_faces(data["encodings"], face_encoding)
+        faces_to_compare = [data["encodings"], face_encoding]
         name = "Unknown"
 
-        face_distances = fr.face_distance(known_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
+        face_distances = fr.face_distance(data["encodings"], face_encoding) #Compares face encodings and tells you how similar the faces are
         best_match_index = np.argmin(face_distances)                            #Most similar face_distance = the best match
 
         confidence = min(face_distances)                                        #Confidence = minimum distance returned by face_distance list
         confidence_out = str(confidence)
 
-        if matches[best_match_index]:
-            name = img_names[best_match_index]
-            check_attendance(name)
-            save_Face()
+        if True in matches: # check to see if we have found a match
+            matchedIndxs = [i for (i, b) in enumerate(matches) if b] #Find positions at which we get True and store them
+            count = {}                                              #function gives you back two loop variables: The count of the current iteration, The value of the item at the current iteration
+                                                                    #this will extract the matching indices. ?? Enumerate = listing of all of the elements of a set
+                                                                    
+
+            for i in matchedIndxs: # loop over the matched indexes and maintain a count for each recognized face face
+                name = data["names"][i] #Check the names at respective indexes we stored in matchedIdxs
+                count[name] = count.get(name, 0) + 1 #increase count for the name we got
+                name = max(count, key=count.get) #set name which has highest count
+                #names.append(name) # will update the list of names
+                check_attendance(name)
 
         face_Frame_Visuals()
         #save_encoding_Data(face_encoding)
-
+        save_Face()
 
         #resize_Face()
         #save_Data()

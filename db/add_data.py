@@ -87,9 +87,10 @@ def add_class():
     connection.execute('''INSERT INTO class(
    class_id, datetime, paper_id) VALUES 
    (40, '15:00:00', 'IN628')''')
-   # connection.execute('''INSERT INTO class(
-   #class_id, datetime, paper_id) VALUES 
-   #(80, 'Friday 1pm', 'IN628')''')
+    connection.execute('''INSERT INTO class(
+   class_id, datetime, paper_id) VALUES 
+   (0, '17:00:00', 'NULL')''')
+
     connection.commit()
 
 
