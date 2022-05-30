@@ -28,7 +28,9 @@ FOREIGN KEY(student_id) REFERENCES student(student_id))""")
  paper_id int,
  PRIMARY KEY(class_id),
  FOREIGN KEY(paper_id) REFERENCES paper(paper_id))""")
-    cursor.execute("CREATE TABLE attendance(class_id int, name string, arrival_time string, arrival_status string)")
+
+
+    cursor.execute("CREATE TABLE attendance(class_id int, name string, arrival_time string, arrival_status string, student_id int)")
 #cursor.execute("CREATE TABLE attendance(student_id int, class_id int, datetime string, present bool, FOREIGN KEY(student_id) REFERENCES student(student_id),  FOREIGN KEY(class_id) REFERENCES class(class_id))")
     connection.commit()
 
