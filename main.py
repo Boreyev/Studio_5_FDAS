@@ -5,7 +5,7 @@ import face_recognition as fr
 import numpy as np
 import cv2
 import os
-from datetime import datetime
+from datetime import datetime, date
 import sqlite3
 import random 
 import pickle
@@ -14,7 +14,7 @@ import cvui
 #Window defs
 MAIN_WINDOW = 'FDAS'
 cvui.init(MAIN_WINDOW)
-mainFrame = np.zeros((180, 200, 3), np.uint8)   #Window dims
+mainFrame = np.zeros((240, 200, 3), np.uint8)   #Window dims
 mainFrame[:] = (64, 64, 64) #Match mainframe with default CV2 BG
 #Checkbox states
 checked = [False]
@@ -105,7 +105,7 @@ def save_distances():    #Outputs face detection data to text file
                 f.write('\n')
                 f.write('\n')
 
-def insert_attendance(name, arrival_time):
+def insert_attendance(name, curDate, arrival_time, id):
     connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
     cur = connection.cursor() #create cursor to interact with sql commands
 
@@ -148,13 +148,50 @@ def insert_attendance(name, arrival_time):
     if classtime[3] + '00:10:00' < arrival_time < classtime[4]:
         classid = class_id[3]
         arrival_status = 'LATE'
-    connection.execute("insert into attendance values(?,?,?,?)", (classid, name, arrival_time, arrival_status))
+    
+    if arrival_time > classtime[4]:
+        classid = 0
+        arrival_status = 'ABSENT'
+    print(classid)
+    print(name)
+    print(curDate)
+    print(arrival_time)
+    print(arrival_status)
+    print(id)
+    connection.execute("insert into attendance values(?,?,?,?,?,?)", (classid, name, curDate, arrival_time, arrival_status, id))
     connection.commit()
 
 def late_msg():
     cv2.putText(frame, f'YOU ARE LATE!!', (left +5, bottom +25), font, 0.75, (0, 0, 255), 2)  
 
 def check_attendance(name):
+    curDate = date.today()
+    curDate = str(curDate)
+#select student name and id from student table and then if name = studentname[1], = studentid 1
+    connection = sqlite3.connect('fdas.sqlite')
+    q1 = "select student_id from student"
+    cur = connection.cursor()
+    cur.execute(q1)
+    student_id = cur.fetchall()
+    for i in range(len(student_id)):
+        student_id[i] = str(student_id[i][0])
+
+    q2 = "select name from student"
+    cur = connection.cursor()
+    cur.execute(q2)
+    student_name = cur.fetchall()
+    for i in range(len(student_name)):
+        student_name[i] = str(student_name[i][0])
+
+    if name == student_name[0]:
+        id = student_id[0]
+
+    if name == student_name[1]:
+        id = student_id[1]
+
+    if name == 'Unknown':
+        id = 0
+
     with open('attendance.csv', 'r+') as f: #r+ allows reading and writing
         attendanceData = f.readlines() #read all lines currently in data to avoid repeats
         roll = [] #empty list for all names that are found
@@ -162,10 +199,10 @@ def check_attendance(name):
             entry = line.split(',') 
             roll.append(entry[0]) 
         if name not in roll: #if name is already not present...
-            curTime = datetime.now
-            arrival_time = curTime.strftime("%m/%d/%Y, %H:%M:%S")
+            curTime = datetime.now()
+            arrival_time = curTime.strftime('%H:%M:%S')
             f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
-            insert_attendance(name, arrival_time)
+            insert_attendance(name, curDate, arrival_time, id)
 
 
 
@@ -178,7 +215,7 @@ def face_Frame_Visuals():
 
 
     #main  
-backup_live_img()
+#backup_live_img()
 data = pickle.loads(open('encodings/face_enc', "rb").read())
 #names = []
 
@@ -231,10 +268,10 @@ while True: #Loop to start taking all the frameworks from the camera
     ptime = ctime
 
     #Loop through each encoding in DB
-    for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings, tolerance=trackbarValue):
+    for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
         
         nTime = datetime.now().time()
-        matches = fr.compare_faces(data["encodings"], face_encoding)
+        matches = fr.compare_faces(data["encodings"], face_encoding, tolerance=trackbarValue) #fix in test
         faces_to_compare = [data["encodings"], face_encoding]
         name = "Unknown"
 
