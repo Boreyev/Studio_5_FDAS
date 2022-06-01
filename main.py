@@ -8,6 +8,7 @@ import os
 from datetime import datetime
 import sqlite3
 import cvui
+import cv2
 
 #Window defs
 MAIN_WINDOW = 'FDAS'
@@ -20,6 +21,8 @@ checked1 = [False]
 checked2 = [False]
 checked3 = [False]
 checked4 = [False]
+checked5 = [False]
+checked6 = [False]
 #TrackBar Value
 trackbarValue = [0.5] 
 frameWidth = 0.5
@@ -29,8 +32,10 @@ webcam = cv2.VideoCapture(0) #takes video from webcam
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 ptime = 0 #Time = 0
 padding = cv2.imread('GUI_Res/Padding.png')
+logo = cv2.imread("GUI_Res/FDAS-logos_transparent.png", cv2.IMREAD_COLOR)
+splash = cv2.imread("GUI_Res/FDAS-logos.jpeg")
 
-def save_Face():    #Each time face is detected, save image with name and confidence level
+def save_Face():    #Each time face is detected, save image with name and distance
     for i in range(5):
         if i==5:
             i = 0
@@ -56,7 +61,7 @@ def resize_Face(): #Not in use as of now, work in progress
     return save_Img_Resize
     
 def save_Data():    #Outputs face detection data to text file
-    lines = [str(nTime) + '\n' + name + ': ' + str(confidence_out)]
+    lines = [str(nTime) + '\n' + name + ': ' + str(distance_out)]
     with open('test_data.txt', 'a') as f:
         for line in lines:
             f.write(line)
@@ -98,9 +103,9 @@ def attendance(name):
 def face_Frame_Visuals():
         cv2.rectangle(Verti, (left, top), (right, bottom), (55, 158, 58), 2)                 #Displays frame around detected face
         cv2.rectangle(Verti, (left, bottom +17), (right, bottom), (55, 158, 58), cv2.FILLED) #Displays box for name visibility
-        cv2.putText(Verti, name, (left +3, bottom +15), font, 0.3, (255, 255, 255), 1)        #Displays name
-        cv2.putText(Verti,f'{confidence}', (left +3, bottom +8), font, 0.3, (255, 255, 255), 1) #Put distance above frame, split string to display as percentage. 
-     
+        cv2.putText(Verti, name, (left +3, bottom +15), font, 0.3, (204, 204, 204), 1)        #Displays name
+        cv2.putText(Verti,distance_out[0:4], (left +3, bottom +8), font, 0.3, (204, 204, 204), 1) #Put distance above frame, split string to display as percentage. 
+
 def save_encoding_Data(face_encoding):    #Outputs face detection data to text file
      lines = [str(face_encoding)]
      with open('encoding_data.txt', 'a') as f:
@@ -148,6 +153,10 @@ while True: #Loop to start taking all the frameworks from the camera
     fps= int(1/(ctime-ptime))
     ptime = ctime
 
+    for f in range(20):
+        if f==20:
+            f = 0
+       
     #Loop through each encoding in DB
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
         
@@ -159,8 +168,8 @@ while True: #Loop to start taking all the frameworks from the camera
         face_distances = fr.face_distance(known_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
         best_match_index = np.argmin(face_distances)                            #Most similar face_distance = the best match
 
-        confidence = min(face_distances)                                        #Confidence = minimum distance returned by face_distance list
-        confidence_out = str(confidence)
+        distance = min(face_distances)                                        #distance = minimum distance returned by face_distance list
+        distance_out = str(distance)
 
         if matches[best_match_index]:
             name = img_names[best_match_index]
@@ -181,40 +190,55 @@ while True: #Loop to start taking all the frameworks from the camera
             save_distances()
         else:
             pass
-    
-    #If Settiing box checked, resize frame to display settings
-    if checked3 == [True]:
-        cv2.resizeWindow(MAIN_WINDOW, 540, 210)
-    else:
-        cv2.resizeWindow(MAIN_WINDOW, 320, 210)
 
-    #If info box checked, display info
-    if checked == [False]:
-        cvui.text(Verti, 5, 182, f'FPS:{fps}', 0.4, 0xcccccc)
-        cvui.text(Verti, 70, 182, f'Number of faces: {numFaces}', 0.4, 0xcccccc)
-        cvui.text(Verti, 5, 195, f'Last Detected: {name}. ', 0.4, 0xcccccc)
-    else:
-        pass
+    if checked5 == [False]:
+        cvui.image(Verti, 0, 0, splash)
+        cvui.checkbox(Verti, 240, 185, 'Start', checked5)
+    elif checked5 == [True]:
+        
+        #If Settiing box checked, resize frame to display settings
+        if (cvui.button(Verti, 275, 181, ">")):
+            cv2.resizeWindow(MAIN_WINDOW, 520, 210)
+        elif (cvui.button(Verti, 235, 181, "<")):
+            cv2.resizeWindow(MAIN_WINDOW, 320, 210)
 
-    #If pause box checked, pause system, requires holddown of any key to uncheck box (FIX)
-    if checked4 == [True]:
-        cv2.waitKey()
-    else:
-        pass
+        #If info box checked, display info
+        if checked == [False]:
+            cvui.text(Verti, 5, 182, f'FPS:{fps}', 0.4, 0xcccccc)
+            cvui.text(Verti, 70, 182, f'Number of faces: {numFaces}', 0.4, 0xcccccc)
+            cvui.text(Verti, 5, 195, f'Last Detected: {name}. ', 0.4, 0xcccccc)
+        else:
+            pass
 
-    #Display Visual Info (Settings)
-    cvui.checkbox(Verti, 10, 10, 'Pause', checked4)
-    cvui.checkbox(Verti, 210, 181, 'Settings', checked3)
-    cvui.text(Verti, 340, 5, 'Settings:', 0.6, 0xcccccc)
-    cvui.checkbox(Verti, 335, 30, 'Save Data', checked2)
-    cvui.checkbox(Verti, 335, 50, 'Hide Box', checked1)
-    cvui.checkbox(Verti, 335, 70, 'Hide Information', checked)
-    cvui.text(Verti, 360, 95, 'Tolerance Threshold:', 0.4, 0xcccccc)
-    cvui.trackbar(Verti, 325, 110, 200, trackbarValue, 0.0, 1)
-    
+        #If pause box checked, pause system, requires holddown of any key to uncheck box (FIX)
+        if checked4 == [True]:
+            cv2.waitKey()
+        else:
+            pass
+
+        if checked6==[True]:
+            cv2.rectangle(Verti,(130,45),(260,110),(64,64,64),-1)
+            cv2.putText(Verti, 'Exit Application?', (140, 60), font, 0.4, (204,204,204), 1)
+            if cvui.button(Verti, 135, 75, "Yes"):
+                break
+            elif cvui.button(Verti, 210, 75, "No"):
+                checked6 == [False]
+
+        #Display Visual Info (Settings)
+        cvui.checkbox(Verti, 10, 10, 'Pause', checked4)
+        #cvui.checkbox(Verti, 210, 181, 'Settings', checked3)
+        cvui.text(Verti, 340, 5, 'Settings:', 0.6, 0xcccccc)
+        cvui.checkbox(Verti, 335, 30, 'Save Data', checked2)
+        cvui.checkbox(Verti, 335, 50, 'Hide Box', checked1)
+        cvui.checkbox(Verti, 335, 70, 'Hide Information', checked)
+        cvui.text(Verti, 360, 95, 'Tolerance Threshold:', 0.4, 0xcccccc)
+        cvui.trackbar(Verti, 325, 110, 200, trackbarValue, 0.0, 1)
+        #Exit button, needs work
+        cvui.checkbox(Verti, 480, 0, 'X', checked6)
+
     cvui.update()   #Cvui needs to be updated before performing any cv2 actions
     cv2.imshow(MAIN_WINDOW, Verti) 
-    
+
     #Destroy window if 'q' pressed. (Change to close on 'X' click)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
@@ -234,7 +258,7 @@ cv2.destroyAllWindows()
 #Single Window solution: https://www.geeksforgeeks.org/how-to-display-multiple-images-in-one-window-using-opencv-python/
 
 #Dev Notes:
-    #Will be worth refactoring code, file for all defs, file for all visual outputs. Keep def calls and logic in Main.py
+    #Will be worth refractoring code, file for all defs, file for all visual outputs. Keep def calls and logic in Main.py
     #Pause functionality needs polishing
     #Need to increase efficiency on main for loop
     #Better documentation is required
