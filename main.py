@@ -14,14 +14,19 @@ import cvui
 #Window defs
 MAIN_WINDOW = 'FDAS'
 cvui.init(MAIN_WINDOW)
+DATA_WINDOW = 'Data'
+cvui.watch(DATA_WINDOW)
 mainFrame = np.zeros((240, 200, 3), np.uint8)   #Window dims
 mainFrame[:] = (64, 64, 64) #Match mainframe with default CV2 BG
+subFrame = np.zeros((240, 200, 3), np.uint8)
+subFrame[:] = (64, 64, 64)
 #Checkbox states
 checked = [False]
 checked1 = [False]
 checked2 = [False]
 checked3 = [False]
 checked4 = [False]
+checked5 = [False]
 #TrackBar Value
 trackbarValue = [0.5] 
 frameWidth = 0.5
@@ -213,7 +218,34 @@ def face_Frame_Visuals():
         cv2.putText(Verti,f'{confidence}', (left +3, bottom +8), font, 0.3, (255, 255, 255), 1) #Put distance above frame, split string to display as percentage. 
 
 
+def display_attendance_data():
+    connection = sqlite3.connect('fdas.sqlite')
+    q1 = "select student_id from attendance"
+    cur = connection.cursor()
+    cur.execute(q1)
+    student_id = cur.fetchall()
+    for i in range(len(student_id)):
+        student_id[i] = str(student_id[i][0])
 
+    q2 = "select name from attendance"
+    cur = connection.cursor()
+    cur.execute(q2)
+    name = cur.fetchall()
+    for i in range(len(name)):
+        name[i] = str(name[i][0])
+
+    q3 = "select arrival_time from attendance"
+    cur = connection.cursor()
+    cur.execute(q3)
+    arrival_time = cur.fetchall()
+    for i in range(len(arrival_time)):
+        arrival_time[i] = str(arrival_time[i][0])
+
+    cv2.putText(subFrame, 'Student ID: ' + student_id[i], (40, 45), font, 0.3, (255, 255, 255), 1)
+    cv2.putText(subFrame, 'Names: ' + name[i], (40, 90), font, 0.3, (255, 255, 255), 1)
+    cv2.putText(subFrame, 'arrival time: ' + arrival_time[i], (40, 135), font, 0.3, (255, 255, 255), 1)
+
+    #look over different for loops and maybe find one t
     #main  
 #backup_live_img()
 data = pickle.loads(open('encodings/face_enc', "rb").read())
@@ -300,7 +332,7 @@ while True: #Loop to start taking all the frameworks from the camera
 
         #resize_Face()
         #save_Data()
-
+        cvui.context(MAIN_WINDOW)
         #If frame box checked, display face_frame visuals
         if checked1 == [False]:
             face_Frame_Visuals()
@@ -315,7 +347,7 @@ while True: #Loop to start taking all the frameworks from the camera
             save_distances()
         else:
             pass
-    
+
     #If Settiing box checked, resize frame to display settings
     if checked3 == [True]:
         cv2.resizeWindow(MAIN_WINDOW, 540, 210)
@@ -346,8 +378,21 @@ while True: #Loop to start taking all the frameworks from the camera
     cvui.text(Verti, 360, 95, 'Tolerance Threshold:', 0.4, 0xcccccc)
     cvui.trackbar(Verti, 325, 110, 200, trackbarValue, 0.0, 1)
     
+
+
     cvui.update()   #Cvui needs to be updated before performing any cv2 actions
-    cv2.imshow(MAIN_WINDOW, Verti) 
+    cv2.imshow(MAIN_WINDOW, Verti)
+
+    #display data to data window
+    cvui.context(DATA_WINDOW)
+    cvui.checkbox(subFrame, 10, 15, 'Display Present Students:', checked5)
+
+    if checked5 == [True]:
+        display_attendance_data()
+    else:
+        pass
+    cvui.update()
+    cv2.imshow(DATA_WINDOW, subFrame)
     
     #Destroy window if 'q' pressed. (Change to close on 'X' click)
     if cv2.waitKey(1) & 0xFF == ord('q'):
