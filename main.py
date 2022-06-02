@@ -227,10 +227,14 @@ def display_attendance_data():
     for i in range(len(student_id)):
         student_id[i] = str(student_id[i][0])
 
+        i+=1
+        
     q2 = "select name from attendance"
     cur = connection.cursor()
     cur.execute(q2)
     name = cur.fetchall()
+    # for n in name:
+    #     aname = ''.join(map(str,name))
     for i in range(len(name)):
         name[i] = str(name[i][0])
 
@@ -241,9 +245,11 @@ def display_attendance_data():
     for i in range(len(arrival_time)):
         arrival_time[i] = str(arrival_time[i][0])
 
-    cv2.putText(subFrame, 'Student ID: ' + student_id[i], (40, 45), font, 0.3, (255, 255, 255), 1)
+    cv2.putText(subFrame, 'Student ID: ' + student_id[i], (40, 25), font, 0.3, (255, 255, 255), 1)
     cv2.putText(subFrame, 'Names: ' + name[i], (40, 90), font, 0.3, (255, 255, 255), 1)
     cv2.putText(subFrame, 'arrival time: ' + arrival_time[i], (40, 135), font, 0.3, (255, 255, 255), 1)
+
+
 
     #look over different for loops and maybe find one t
     #main  
@@ -284,7 +290,7 @@ while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
 
     frame_resize = cv2.resize(frame, (0, 0), fx=frameWidth, fy=frameHeight)    #Resizes frame by adjusting frame height and width.
-                                                                               #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
+                                                                           #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
                                                                                #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
     rgb_frame = frame_resize[:, :, ::-1]                        #convertframe to rgb
     
@@ -386,6 +392,9 @@ while True: #Loop to start taking all the frameworks from the camera
     #display data to data window
     cvui.context(DATA_WINDOW)
     cvui.checkbox(subFrame, 10, 15, 'Display Present Students:', checked5)
+    curTime = datetime.now()
+    currentTime = curTime.strftime('%H:%M:%S')
+    cv2.putText(subFrame, 'Current time: ' + currentTime, (20, 155), font, 0.3, (255, 255, 255), 1)
 
     if checked5 == [True]:
         display_attendance_data()
