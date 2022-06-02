@@ -14,11 +14,9 @@ import cvui
 #Window defs
 MAIN_WINDOW = 'FDAS'
 cvui.init(MAIN_WINDOW)
-DATA_WINDOW = 'Data'
-cvui.watch(DATA_WINDOW)
-mainFrame = np.zeros((240, 200, 3), np.uint8)   #Window dims
+mainFrame = np.zeros((180, 200, 3), np.uint8)   #Window dims
 mainFrame[:] = (64, 64, 64) #Match mainframe with default CV2 BG
-subFrame = np.zeros((240, 200, 3), np.uint8)
+subFrame = np.zeros((180, 200, 3), np.uint8)
 subFrame[:] = (64, 64, 64)
 #Checkbox states
 checked = [False]
@@ -245,9 +243,9 @@ def display_attendance_data():
     for i in range(len(arrival_time)):
         arrival_time[i] = str(arrival_time[i][0])
 
-    cv2.putText(subFrame, 'Student ID: ' + student_id[i], (40, 25), font, 0.3, (255, 255, 255), 1)
-    cv2.putText(subFrame, 'Names: ' + name[i], (40, 90), font, 0.3, (255, 255, 255), 1)
-    cv2.putText(subFrame, 'arrival time: ' + arrival_time[i], (40, 135), font, 0.3, (255, 255, 255), 1)
+    cv2.putText(Verti, 'Student ID: ' + student_id[i], (650, 25), font, 0.3, (255, 255, 255), 1)
+    cv2.putText(Verti, 'Names: ' + name[i], (650, 90), font, 0.3, (255, 255, 255), 1)
+    cv2.putText(Verti, 'arrival time: ' + arrival_time[i], (650, 135), font, 0.3, (255, 255, 255), 1)
 
 
 
@@ -294,8 +292,9 @@ while True: #Loop to start taking all the frameworks from the camera
                                                                                #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
     rgb_frame = frame_resize[:, :, ::-1]                        #convertframe to rgb
     
-    Hori = np.concatenate((frame_resize, mainFrame), axis=1)    #Merge settings and webcam frame
-    Verti = np.concatenate((Hori, padding), axis=0)             #Add bottom padding
+    Hori = np.concatenate((frame_resize, mainFrame), axis=1) 
+    Bind = np.concatenate((Hori, subFrame), axis=1)   #Merge settings and webcam frame
+    Verti = np.concatenate((Bind, padding), axis=0)             #Add bottom padding
    
     face_locations = fr.face_locations(rgb_frame, model="hog")                  #check where faces are in the frame, uses hog model (faster but less accurate)
     face_encodings = fr.face_encodings(rgb_frame, face_locations, num_jitters=1, model=small)  #detects which faces are in the frame
@@ -356,7 +355,7 @@ while True: #Loop to start taking all the frameworks from the camera
 
     #If Settiing box checked, resize frame to display settings
     if checked3 == [True]:
-        cv2.resizeWindow(MAIN_WINDOW, 540, 210)
+        cv2.resizeWindow(MAIN_WINDOW, 720, 210)
     else:
         cv2.resizeWindow(MAIN_WINDOW, 320, 210)
 
@@ -374,6 +373,17 @@ while True: #Loop to start taking all the frameworks from the camera
     else:
         pass
 
+        #display data to data window
+    cvui.checkbox(Verti, 50, 15, 'Display Present Students:', checked5)
+    curTime = datetime.now()
+    currentTime = curTime.strftime('%H:%M:%S')
+    cv2.putText(Verti, 'Current time: ' + currentTime, (550, 155), font, 0.3, (255, 255, 255), 1)
+
+    if checked5 == [True]:
+        display_attendance_data()
+    else:
+        pass
+    
     #Display Visual Info (Settings)
     cvui.checkbox(Verti, 10, 10, 'Pause', checked4)
     cvui.checkbox(Verti, 210, 181, 'Settings', checked3)
@@ -384,25 +394,10 @@ while True: #Loop to start taking all the frameworks from the camera
     cvui.text(Verti, 360, 95, 'Tolerance Threshold:', 0.4, 0xcccccc)
     cvui.trackbar(Verti, 325, 110, 200, trackbarValue, 0.0, 1)
     
-
-
     cvui.update()   #Cvui needs to be updated before performing any cv2 actions
     cv2.imshow(MAIN_WINDOW, Verti)
 
-    #display data to data window
-    cvui.context(DATA_WINDOW)
-    cvui.checkbox(subFrame, 10, 15, 'Display Present Students:', checked5)
-    curTime = datetime.now()
-    currentTime = curTime.strftime('%H:%M:%S')
-    cv2.putText(subFrame, 'Current time: ' + currentTime, (20, 155), font, 0.3, (255, 255, 255), 1)
 
-    if checked5 == [True]:
-        display_attendance_data()
-    else:
-        pass
-    cvui.update()
-    cv2.imshow(DATA_WINDOW, subFrame)
-    
     #Destroy window if 'q' pressed. (Change to close on 'X' click)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
