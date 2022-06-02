@@ -15,6 +15,7 @@ MAIN_WINDOW = 'FDAS'
 cvui.init(MAIN_WINDOW)
 mainFrame = np.zeros((180, 200, 3), np.uint8)   #Window dims
 mainFrame[:] = (64, 64, 64) #Match mainframe with default CV2 BG
+
 #Checkbox states
 checked = [False]
 checked1 = [False]
@@ -29,10 +30,13 @@ frameWidth = 0.5
 frameHeight = 0.5
 #OpenCV variables
 webcam = cv2.VideoCapture(0) #takes video from webcam
+width = webcam.get(cv2.CAP_PROP_FRAME_WIDTH)
+height = webcam.get(cv2.CAP_PROP_FRAME_HEIGHT)
+print(width,height)
+nFPS =  webcam.get(cv2.CAP_PROP_FPS)
 font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 ptime = 0 #Time = 0
 padding = cv2.imread('GUI_Res/Padding.png')
-logo = cv2.imread("GUI_Res/FDAS-logos_transparent.png", cv2.IMREAD_COLOR)
 splash = cv2.imread("GUI_Res/FDAS-logos.jpeg")
 
 def save_Face():    #Each time face is detected, save image with name and distance
@@ -137,7 +141,7 @@ known_encodings = encodings(images)
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
 
-    frame_resize = cv2.resize(frame, (0, 0), fx=frameWidth, fy=frameHeight)    #Resizes frame by adjusting frame height and width.
+    frame_resize = cv2.resize(frame, (0, 0), fx=.5, fy=.5)    #Resizes frame by adjusting frame height and width.
                                                                                #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
                                                                                #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
     rgb_frame = frame_resize[:, :, ::-1]                        #convertframe to rgb
@@ -221,7 +225,7 @@ while True: #Loop to start taking all the frameworks from the camera
             cv2.putText(Verti, 'Exit Application?', (140, 60), font, 0.4, (204,204,204), 1)
             if cvui.button(Verti, 135, 75, "Yes"):
                 break
-            elif cvui.button(Verti, 210, 75, "No"):
+            elif cvui.button(Verti, 200, 75, "No"):
                 checked6 == [False]
 
         #Display Visual Info (Settings)
