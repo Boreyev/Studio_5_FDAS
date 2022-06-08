@@ -43,13 +43,7 @@ def add_student():
    (102, 'Ike')''')
     connection.execute('''INSERT INTO student(
    student_id, name) VALUES 
-   (103, 'John Cena')''')
-    connection.execute('''INSERT INTO student(
-   student_id, name) VALUES 
-   (104, 'John Key')''')
-    connection.execute('''INSERT INTO student(
-   student_id, name) VALUES 
-   (105, 'Queen Elizabeth')''')
+   (103, 'Unknown')''')
     connection.commit()
 
 def add_paper():

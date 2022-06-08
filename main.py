@@ -1,22 +1,23 @@
 from cgitb import small
+from tabnanny import check
 import time
 from unicodedata import name
 import face_recognition as fr
 import numpy as np
 import cv2
-import os
 from datetime import datetime, date
-import sqlite3
-import random 
 import pickle
 import cvui
-
+from save_data import save_encoding_Data, save_distances, save_Data
+from img_backup import backup_live_img
+from insert_attendance import check_attendance
+from display import display
 #Window defs
 MAIN_WINDOW = 'FDAS'
 cvui.init(MAIN_WINDOW)
-mainFrame = np.zeros((180, 200, 3), np.uint8)   #Window dims
+mainFrame = np.zeros((240, 200, 3), np.uint8)   #Window dims
 mainFrame[:] = (64, 64, 64) #Match mainframe with default CV2 BG
-subFrame = np.zeros((180, 200, 3), np.uint8)
+subFrame = np.zeros((240, 200, 3), np.uint8)
 subFrame[:] = (64, 64, 64)
 #Checkbox states
 checked = [False]
@@ -36,6 +37,11 @@ ptime = 0 #Time = 0
 
 padding = cv2.imread('GUI_Res/Padding.png')
 
+def resize_Face(): #Not in use as of now, work in progress 
+    img_Height = 100
+    img_Width = 80
+    img_Dim = img_Width, img_Height
+
 def save_Face():    #Each time face is detected, save image with name and confidence level
     for i in range(5):
         if i==5:
@@ -46,168 +52,9 @@ def save_Face():    #Each time face is detected, save image with name and confid
             crop_Face = frame_resize[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face.
             save_Image = cv2.imwrite('live_dataset/'+name+'/'+name+str(i)+'.jpg',crop_Face)
     return save_Image
-
-def backup_live_img():
-    connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
-    q1 = "select student_id from student"
-    cur = connection.cursor()
-    cur.execute(q1)
-    student_id = cur.fetchall()
-
-    for i in range(len(student_id)):
-        student_id[i] = str(student_id[i][0])
-        print(student_id[i])
-
-    q2 = "select name from student"
-    cur = connection.cursor()
-    cur.execute(q2)
-    student_name = cur.fetchall()
-
-    for i in range(len(student_name)):
-        student_name[i] = str(student_name[i][0])
-        print(student_name[i])
-
-    path = "live_dataset"
-    img_list = os.listdir(path) #returns list of img names with .jpg extension
-    img_id = random.randint(0,10000)
-    for name in student_name:
-        fullpath = f'{path}/{name}'
-        if student_name == student_name[0]:
-            student_id = student_id[0]
-        elif student_name == student_name[1]:
-            student_id = student_id[1]
-        elif student_name == student_name[2]:
-            student_id = student_name[2]
-        img_list = os.listdir(fullpath)
-        print(img_list)
-        for img in img_list:
-            cur_img = cv2.imread(f'{fullpath}/{img}')
-            img_id += 5
-            connection.execute("insert into image values(?,?,?)", (img_id, student_id, cur_img))
-            connection.commit()
-
-def resize_Face(): #Not in use as of now, work in progress 
-    img_Height = 100
-    img_Width = 80
-    img_Dim = img_Width, img_Height
-
-    
-def save_Data():    #Outputs face detection data to text file
-    lines = [str(nTime) + '\n' + name + ': ' + str(confidence_out)]
-    with open('test_data.txt', 'a') as f:
-        for line in lines:
-            f.write(line)
-            f.write('\n')
-            f.write('\n')
-
-def save_distances():    #Outputs face detection data to text file
-        lines = [str(name) + ' Detected: ' + str(nTime) + '\n' + 'Names: ' + str(img_names) + '\n' + 'Distances: ' + str(face_distances)]
-        with open('test_distances.txt', 'a') as f:
-            for line in lines:
-                f.write(line)
-                f.write('\n')
-                f.write('\n')
-
-def insert_attendance(name, curDate, arrival_time, id):
-    connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
-    cur = connection.cursor() #create cursor to interact with sql commands
-
-    q1 = "select class_id from class"
-    cur.execute(q1)
-    class_id = cur.fetchall()
-    for i in range(len(class_id)):
-        class_id[i] = str(class_id[i][0])
-
-    q2 = "select datetime from class"
-    cur.execute(q2)
-    classtime = cur.fetchall()
-    for i in range(len(classtime)):
-        classtime[i] = str(classtime[i][0])
-
-    if classtime[0] < arrival_time < classtime[1]:
-        classid = class_id[0]
-        arrival_status = 'PRESENT'
-    if classtime[0] + '00:10:00' < arrival_time < classtime[1]:
-        classid = class_id[0]
-        arrival_status = 'LATE'
-
-    if classtime[1] < arrival_time < classtime[2]:
-        classid = class_id[1]
-        arrival_status = 'PRESENT'
-    if classtime[1] + '00:10:00' < arrival_time < classtime[2]:
-        classid = class_id[1]
-        arrival_status = 'LATE'
-
-    if classtime[2] < arrival_time < classtime[3]:
-        classid = class_id[2]
-        arrival_status = 'PRESENT'
-    if classtime[2] + '00:10:00' < arrival_time < classtime[3]:
-        classid = class_id[2]
-        arrival_status = 'LATE'
-
-    if classtime[3] < arrival_time < classtime[4]:
-        classid = class_id[3]
-        arrival_status = 'PRESENT'
-    if classtime[3] + '00:10:00' < arrival_time < classtime[4]:
-        classid = class_id[3]
-        arrival_status = 'LATE'
-    
-    if arrival_time > classtime[4]:
-        classid = 0
-        arrival_status = 'ABSENT'
-    print(classid)
-    print(name)
-    print(curDate)
-    print(arrival_time)
-    print(arrival_status)
-    print(id)
-    connection.execute("insert into attendance values(?,?,?,?,?,?)", (classid, name, curDate, arrival_time, arrival_status, id))
-    connection.commit()
-
+   
 def late_msg():
     cv2.putText(frame, f'YOU ARE LATE!!', (left +5, bottom +25), font, 0.75, (0, 0, 255), 2)  
-
-def check_attendance(name):
-    curDate = date.today()
-    curDate = str(curDate)
-#select student name and id from student table and then if name = studentname[1], = studentid 1
-    connection = sqlite3.connect('fdas.sqlite')
-    q1 = "select student_id from student"
-    cur = connection.cursor()
-    cur.execute(q1)
-    student_id = cur.fetchall()
-    for i in range(len(student_id)):
-        student_id[i] = str(student_id[i][0])
-
-    q2 = "select name from student"
-    cur = connection.cursor()
-    cur.execute(q2)
-    student_name = cur.fetchall()
-    for i in range(len(student_name)):
-        student_name[i] = str(student_name[i][0])
-
-    if name == student_name[0]:
-        id = student_id[0]
-
-    if name == student_name[1]:
-        id = student_id[1]
-
-    if name == 'Unknown':
-        id = 0
-
-    with open('attendance.csv', 'r+') as f: #r+ allows reading and writing
-        attendanceData = f.readlines() #read all lines currently in data to avoid repeats
-        roll = [] #empty list for all names that are found
-        for line in attendanceData: #goes through attendance.csv to check which students are present
-            entry = line.split(',') 
-            roll.append(entry[0]) 
-        if name not in roll: #if name is already not present...
-            curTime = datetime.now()
-            arrival_time = curTime.strftime('%H:%M:%S')
-            f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
-            insert_attendance(name, curDate, arrival_time, id)
-
-
 
 def face_Frame_Visuals():
         cv2.rectangle(Verti, (left, top), (right, bottom), (55, 158, 58), 2)                 #Displays frame around detected face
@@ -216,73 +63,17 @@ def face_Frame_Visuals():
         cv2.putText(Verti,f'{confidence}', (left +3, bottom +8), font, 0.3, (255, 255, 255), 1) #Put distance above frame, split string to display as percentage. 
 
 
-def display_attendance_data():
-    connection = sqlite3.connect('fdas.sqlite')
-    q1 = "select student_id from attendance"
-    cur = connection.cursor()
-    cur.execute(q1)
-    student_id = cur.fetchall()
-    for i in range(len(student_id)):
-        student_id[i] = str(student_id[i][0])
-
-        i+=1
-        
-    q2 = "select name from attendance"
-    cur = connection.cursor()
-    cur.execute(q2)
-    name = cur.fetchall()
-    # for n in name:
-    #     aname = ''.join(map(str,name))
-    for i in range(len(name)):
-        name[i] = str(name[i][0])
-
-    q3 = "select arrival_time from attendance"
-    cur = connection.cursor()
-    cur.execute(q3)
-    arrival_time = cur.fetchall()
-    for i in range(len(arrival_time)):
-        arrival_time[i] = str(arrival_time[i][0])
-
-    cv2.putText(Verti, 'Student ID: ' + student_id[i], (650, 25), font, 0.3, (255, 255, 255), 1)
-    cv2.putText(Verti, 'Names: ' + name[i], (650, 90), font, 0.3, (255, 255, 255), 1)
-    cv2.putText(Verti, 'arrival time: ' + arrival_time[i], (650, 135), font, 0.3, (255, 255, 255), 1)
-
-
-
-    #look over different for loops and maybe find one t
-    #main  
-#backup_live_img()
-data = pickle.loads(open('encodings/face_enc', "rb").read())
-#names = []
-
-     
-def save_encoding_Data(face_encoding):    #Outputs face detection data to text file
-     lines = [str(face_encoding)]
-     with open('encoding_data.txt', 'a') as f:
-         for line in lines:
-             f.write(line)
-             f.write('\n')
-
-def encodings(images):  #Documenting Required
-    list_of_encodings = []
-    for img in images:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        encode_img = fr.face_encodings(img)[0] #
-        list_of_encodings.append(encode_img)
-   
-    return list_of_encodings 
-
-path = "face_dataset"
-images = [] #list of all imgs we are importing
-img_names = [] #list of img names
-img_list = os.listdir(path) #returns list of img names with .jpg extension
-
-for img in img_list:
-    cur_img = cv2.imread(f'{path}/{img}')
-    images.append(cur_img)
-    img_names.append(os.path.splitext(img)[0]) #removes extension part of file
+#def display_id(student_id[i]):
     
-known_encodings = encodings(images)
+#def display_name():
+ #    cv2.putText(Verti, 'Names: ' + name[i], (510, 65), font, 0.3, (255, 255, 255), 1)
+#def display_arrival_time():
+ #   cv2.putText(Verti, 'arrival time: ' + arrival_time[i], (510, 85), font, 0.3, (255, 255, 255), 1)
+
+
+
+backup_live_img()         
+data = pickle.loads(open('encodings/face_enc', "rb").read())
 
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
@@ -329,11 +120,10 @@ while True: #Loop to start taking all the frameworks from the camera
                 count[name] = count.get(name, 0) + 1 #increase count for the name we got
                 name = max(count, key=count.get) #set name which has highest count
                 #names.append(name) # will update the list of names
-                check_attendance(name)
+
 
         face_Frame_Visuals()
-        #save_encoding_Data(face_encoding)
-        save_Face()
+        check_attendance(name)
 
         #resize_Face()
         #save_Data()
@@ -348,8 +138,8 @@ while True: #Loop to start taking all the frameworks from the camera
         if checked2 == [True]:
             save_encoding_Data(face_encoding)
             save_Face()
-            save_Data()
-            save_distances()
+            save_Data(nTime, name, confidence_out)
+            save_distances(name, nTime, face_distances)
         else:
             pass
 
@@ -374,13 +164,13 @@ while True: #Loop to start taking all the frameworks from the camera
         pass
 
         #display data to data window
-    cvui.checkbox(Verti, 50, 15, 'Display Present Students:', checked5)
+    cvui.checkbox(Verti, 510, 15, 'Display Present Students:', checked5)
     curTime = datetime.now()
     currentTime = curTime.strftime('%H:%M:%S')
-    cv2.putText(Verti, 'Current time: ' + currentTime, (550, 155), font, 0.3, (255, 255, 255), 1)
+    cvui.text(Verti, 100, 10, 'Current Time: ' + currentTime, 0.5, 0xcccccc)
 
     if checked5 == [True]:
-        display_attendance_data()
+        display(Verti, font)
     else:
         pass
     
