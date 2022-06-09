@@ -46,17 +46,23 @@ import cvui
     # q3 = "select arrival_time from attendance"
     # cur = connection.cursor()
     # cur.execute(q3)
-    # arrival_time = cur.fetchall()
-    # for i in range(len(arrival_time)):
-    #     arrival_time[i] = str(arrival_time[i][0])
-    #    
-def display():
-        with open('attendance.csv', 'r+') as f: #r+ allows reading and writing
-            attendanceData = f.readlines() #read all lines currently in data to avoid repeats
-            roll = [] #empty list for all names that are found
-        for line in attendanceData: #goes through attendance.csv to check which students are present
-            #print(line)
-            entry = line.split(',')
-            print(entry[1])
+#     # arrival_time = cur.fetchall()
+#     # for i in range(len(arrival_time)):
+#     #     arrival_time[i] = str(arrival_time[i][0])
+#     #    
+# def display():
+#         with open('attendance.csv', 'r+') as f: #r+ allows reading and writing
+#             attendanceData = f.readlines() #read all lines currently in data to avoid repeats
+#             roll = [] #empty list for all names that are found
+#         for line in attendanceData: #goes through attendance.csv to check which students are present
+#             #print(line)
+#             entry = line.split(',')
+#             print(entry[1])
 
-display()
+# display()
+
+# import sqlite3
+
+# connection = sqlite3.connect('fdas.sqlite')
+# cursor = connection.cursor()
+# cursor.execute("delete from attendance")

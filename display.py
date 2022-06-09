@@ -14,8 +14,8 @@ import cvui
 def display(Verti, font):
     y1 = 40
     connection = sqlite3.connect('fdas.sqlite')
-    q1 = "select student_id from attendance"
     cur = connection.cursor()
+    q1 = "select student_id from attendance"
     cur.execute(q1)
     student_id = cur.fetchall()
     for i in range(len(student_id)):
@@ -24,7 +24,6 @@ def display(Verti, font):
         y1 += 15
     y2 = 90
     q2 = "select name from attendance"
-    cur = connection.cursor()
     cur.execute(q2)
     name = cur.fetchall()
     for i in range(len(name)):
@@ -33,10 +32,17 @@ def display(Verti, font):
         y2 += 15
     y3 = 140
     q3 = "select arrival_time from attendance"
-    cur = connection.cursor()
     cur.execute(q3)
     arrival_time = cur.fetchall()
     for i in range(len(arrival_time)):
         arrival_time[i] = str(arrival_time[i][0])
         cv2.putText(Verti, 'arrival time: ' + arrival_time[i], (510, y3), font, 0.3, (255, 255, 255), 1)
-        y3 += 15
+        y3 += 15   
+    # q4 = "select arrival_status from attendance"
+    # cur.execute(q4)
+    # arrival_status = cur.fetchall()
+    # for i in range(len(arrival_status)):
+    #     arrival_status[i] = str(arrival_status[i][0])
+    #     if arrival_status[i] == "LATE":
+    #         cv2.putText(Verti, arrival_status[i], (620, y1), font, 0.3, (255, 255, 255), 1)
+    #         y1 += 15

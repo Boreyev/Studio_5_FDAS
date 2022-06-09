@@ -96,9 +96,6 @@ def insert_attendance(name, curDate, arrival_time, id):
         classid = class_id[3]
         arrival_status = 'LATE'
     
-    if arrival_time < classtime[0]:
-        classid = 0
-        arrival_status = 'ABSENT'
     connection.execute("insert into attendance values(?,?,?,?,?,?)", (classid, name, curDate, arrival_time, arrival_status, id))
     connection.commit()
 
