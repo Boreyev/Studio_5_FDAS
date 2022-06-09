@@ -15,9 +15,9 @@ from display import display
 #Window defs
 MAIN_WINDOW = 'FDAS'
 cvui.init(MAIN_WINDOW)
-mainFrame = np.zeros((240, 200, 3), np.uint8)   #Window dims
+mainFrame = np.zeros((180, 200, 3), np.uint8)   #Window dims
 mainFrame[:] = (64, 64, 64) #Match mainframe with default CV2 BG
-subFrame = np.zeros((240, 200, 3), np.uint8)
+subFrame = np.zeros((180, 200, 3), np.uint8)
 subFrame[:] = (64, 64, 64)
 #Checkbox states
 checked = [False]
@@ -62,20 +62,12 @@ def face_Frame_Visuals():
         cv2.putText(Verti, name, (left +3, bottom +15), font, 0.3, (255, 255, 255), 1)        #Displays name
         cv2.putText(Verti,f'{confidence}', (left +3, bottom +8), font, 0.3, (255, 255, 255), 1) #Put distance above frame, split string to display as percentage. 
 
-
-#def display_id(student_id[i]):
-    
-#def display_name():
- #    cv2.putText(Verti, 'Names: ' + name[i], (510, 65), font, 0.3, (255, 255, 255), 1)
-#def display_arrival_time():
- #   cv2.putText(Verti, 'arrival time: ' + arrival_time[i], (510, 85), font, 0.3, (255, 255, 255), 1)
-
-
-
 backup_live_img()         
 data = pickle.loads(open('encodings/face_enc', "rb").read())
 
+counterH = 0  
 while True: #Loop to start taking all the frameworks from the camera
+    counterH = counterH + 1 
     ret, frame = webcam.read()
 
     frame_resize = cv2.resize(frame, (0, 0), fx=frameWidth, fy=frameHeight)    #Resizes frame by adjusting frame height and width.
@@ -114,12 +106,14 @@ while True: #Loop to start taking all the frameworks from the camera
             count = {}                                              #function gives you back two loop variables: The count of the current iteration, The value of the item at the current iteration
                                                                     #this will extract the matching indices. ?? Enumerate = listing of all of the elements of a set
                                                                     
-
-            for i in matchedIndxs: # loop over the matched indexes and maintain a count for each recognized face face
-                name = data["names"][i] #Check the names at respective indexes we stored in matchedIdxs
-                count[name] = count.get(name, 0) + 1 #increase count for the name we got
-                name = max(count, key=count.get) #set name which has highest count
-                #names.append(name) # will update the list of names
+            if ( counterH %20 == 0 ): 
+                counterH = 0 
+                for i in matchedIndxs: # loop over the matched indexes and maintain a count for each recognized face face
+                    name = data["names"][i] #Check the names at respective indexes we stored in matchedIdxs
+                    count[name] = count.get(name, 0) + 1 #increase count for the name we got
+                    name = max(count, key=count.get) #set name which has highest count
+                    #names.append(name) # will update the list of names
+            
 
 
         face_Frame_Visuals()
