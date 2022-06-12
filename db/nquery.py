@@ -60,9 +60,17 @@ import cvui
 #             print(entry[1])
 
 # display()
+import sqlite3
 
-# import sqlite3
+conn = sqlite3.connect('fdas.sqlite')
+c = conn.cursor()
 
-# connection = sqlite3.connect('fdas.sqlite')
-# cursor = connection.cursor()
-# cursor.execute("delete from attendance")
+# delete all rows from table
+c.execute('DELETE FROM attendance')
+
+print('We have deleted', c.rowcount, 'records from the table.')
+
+#commit the changes to db			
+conn.commit()
+#close the connection
+conn.close()

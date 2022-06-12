@@ -4,25 +4,7 @@ import sqlite3
 from datetime import datetime, date
 from unittest import result
 
-connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
-curTime = datetime.now() # current date and time
-curDate = date.today()
-curDate = str(curDate)
-classid = 30
-name = "Hermione"
-id = 107
-arrival_status = 'PRESENT'
-arrival_time = curTime.strftime("%m/%d/%Y, %H:%M:%S")
-print("date and time:",arrival_time)
-connection.execute("insert into attendance values(?,?,?,?,?,?)", (classid, name, curDate, arrival_time, arrival_status, id))
-connection.commit()
-
-# Python program to get
-# current date
   
-  
-
-
 
 
 connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
@@ -35,10 +17,8 @@ student_id = cur.fetchall()
 # print(newnewSid)
 # for i in range(len(student_id)):
 #     newSid = ''.join(map(str,student_id[i]))
-
-for row in student_id:
-    newSid = ''.join(map(str,student_id))
-    print(newSid)
+newSid = ''.join(map(str,student_id))
+print(newSid[0])
 
 # q2 = "select name from student"
 # cur = connection.cursor()
