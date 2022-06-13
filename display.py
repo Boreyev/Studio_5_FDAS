@@ -23,26 +23,27 @@ def display(Verti, font):
         cv2.putText(Verti, 'Student ID: ' + student_id[i], (510, y1), font, 0.3, (255, 255, 255), 1)
         y1 += 15
     y2 = 90
+    y4 = 90
+    q4 = "select arrival_status from attendance"
+    cur.execute(q4)
+    arrival_status = cur.fetchall()
+    for i in range(len(arrival_status)):
+        arrival_status[i] = str(arrival_status[i][0])
+        if arrival_status[i] == "LATE":
+            cv2.putText(Verti, arrival_status[i], (590, y4), font, 0.3, (0,0,255), 1)
+            y4 += 15
     q2 = "select name from attendance"
     cur.execute(q2)
     name = cur.fetchall()
     for i in range(len(name)):
         name[i] = str(name[i][0])
-        cv2.putText(Verti, 'Names: ' + name[i], (510, y2), font, 0.3, (255, 255, 255), 1)
+        cv2.putText(Verti, 'Name: ' + name[i], (510, y2), font, 0.3, (255, 255, 255), 1)
         y2 += 15
-    y3 = 140
+    y3 = 90
     q3 = "select arrival_time from attendance"
     cur.execute(q3)
     arrival_time = cur.fetchall()
     for i in range(len(arrival_time)):
         arrival_time[i] = str(arrival_time[i][0])
-        cv2.putText(Verti, 'arrival time: ' + arrival_time[i], (510, y3), font, 0.3, (255, 255, 255), 1)
+        cv2.putText(Verti, ', arrived at: ' + arrival_time[i], (612, y3), font, 0.3, (255, 255, 255), 1)
         y3 += 15   
-    # q4 = "select arrival_status from attendance"
-    # cur.execute(q4)
-    # arrival_status = cur.fetchall()
-    # for i in range(len(arrival_status)):
-    #     arrival_status[i] = str(arrival_status[i][0])
-    #     if arrival_status[i] == "LATE":
-    #         cv2.putText(Verti, arrival_status[i], (620, y1), font, 0.3, (255, 255, 255), 1)
-    #         y1 += 15

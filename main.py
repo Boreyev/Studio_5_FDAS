@@ -1,5 +1,4 @@
 from cgitb import small
-from tabnanny import check
 import time
 from unicodedata import name
 import face_recognition as fr
@@ -12,12 +11,13 @@ from save_data import save_encoding_Data, save_distances, save_Data
 from img_backup import backup_live_img
 from insert_attendance import check_attendance
 from display import display
+from clear_data import clear_csv, clear_attendance
 #Window defs
 MAIN_WINDOW = 'FDAS'
 cvui.init(MAIN_WINDOW)
-mainFrame = np.zeros((180, 200, 3), np.uint8)   #Window dims
+mainFrame = np.zeros((240, 200, 3), np.uint8)   #Window dims
 mainFrame[:] = (64, 64, 64) #Match mainframe with default CV2 BG
-subFrame = np.zeros((180, 200, 3), np.uint8)
+subFrame = np.zeros((240, 200, 3), np.uint8)
 subFrame[:] = (64, 64, 64)
 #Checkbox states
 checked = [False]
@@ -57,11 +57,13 @@ def late_msg():
     cv2.putText(frame, f'YOU ARE LATE!!', (left +5, bottom +25), font, 0.75, (0, 0, 255), 2)  
 
 def face_Frame_Visuals():
-        cv2.rectangle(Verti, (left, top), (right, bottom), (55, 158, 58), 2)                 #Displays frame around detected face
-        cv2.rectangle(Verti, (left, bottom +17), (right, bottom), (55, 158, 58), cv2.FILLED) #Displays box for name visibility
-        cv2.putText(Verti, name, (left +3, bottom +15), font, 0.3, (255, 255, 255), 1)        #Displays name
+        cv2.rectangle(Verti, (left, top), (right, bottom), (55, 158, 58), 2)                    #Displays frame around detected face
+        cv2.rectangle(Verti, (left, bottom +17), (right, bottom), (55, 158, 58), cv2.FILLED)    #Displays box for name visibility
+        cv2.putText(Verti, name, (left +3, bottom +15), font, 0.3, (255, 255, 255), 1)          #Displays name
         cv2.putText(Verti,f'{confidence}', (left +3, bottom +8), font, 0.3, (255, 255, 255), 1) #Put distance above frame, split string to display as percentage. 
 
+clear_csv()
+clear_attendance()
 backup_live_img()         
 data = pickle.loads(open('encodings/face_enc', "rb").read())
 
@@ -70,10 +72,10 @@ while True: #Loop to start taking all the frameworks from the camera
     counterH = counterH + 1 
     ret, frame = webcam.read()
 
-    frame_resize = cv2.resize(frame, (0, 0), fx=frameWidth, fy=frameHeight)    #Resizes frame by adjusting frame height and width.
-                                                                           #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
-                                                                               #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
-    rgb_frame = frame_resize[:, :, ::-1]                        #convertframe to rgb
+    frame_resize = cv2.resize(frame, (0, 0), fx=frameWidth, fy=frameHeight)     #Resizes frame by adjusting frame height and width.
+                                                                                #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
+                                                                                #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
+    rgb_frame = frame_resize[:, :, ::-1]                                        #convertframe to rgb
     
     Hori = np.concatenate((frame_resize, mainFrame), axis=1) 
     Bind = np.concatenate((Hori, subFrame), axis=1)   #Merge settings and webcam frame
@@ -106,7 +108,7 @@ while True: #Loop to start taking all the frameworks from the camera
             count = {}                                              #function gives you back two loop variables: The count of the current iteration, The value of the item at the current iteration
                                                                     #this will extract the matching indices. ?? Enumerate = listing of all of the elements of a set
                                                                     
-            if ( counterH %20 == 0 ): 
+            if ( counterH % 20 == 0 ): 
                 counterH = 0 
                 for i in matchedIndxs: # loop over the matched indexes and maintain a count for each recognized face face
                     name = data["names"][i] #Check the names at respective indexes we stored in matchedIdxs
