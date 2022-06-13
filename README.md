@@ -25,6 +25,9 @@ pip install opencv-python
 ``` 
 pip install cvui
 ```
+``` 
+pip install screeninfo
+```
 
 ### Note:
 you may need to run
