@@ -11,7 +11,7 @@ from save_data import save_encoding_Data, save_distances, save_Data
 from img_backup import backup_live_img
 from insert_attendance import check_attendance
 from display import display
-from clear_data import clear_csv, clear_attendance
+from clear_data import clear_csv
 #Window defs
 MAIN_WINDOW = 'FDAS'
 cvui.init(MAIN_WINDOW)
@@ -26,6 +26,7 @@ checked2 = [False]
 checked3 = [False]
 checked4 = [False]
 checked5 = [False]
+checkedx = [False]
 #TrackBar Value
 trackbarValue = [0.5] 
 frameWidth = 0.5
@@ -43,18 +44,16 @@ def resize_Face(): #Not in use as of now, work in progress
     img_Dim = img_Width, img_Height
 
 def save_Face():    #Each time face is detected, save image with name and confidence level
-    for i in range(5):
-        if i==5:
+    for i in range(2):
+        if i==2:
             i = 0
-        elif i == 0 or 1 or 2 or 3 or 4:
+        elif i == 0 or 1 or 2:
             height = bottom - top + 15   #Define height / width
             width = right - left
             crop_Face = frame_resize[top:top + height, left:left + width]  #Create new frame, use location encodings to crop face.
             save_Image = cv2.imwrite('live_dataset/'+name+'/'+name+str(i)+'.jpg',crop_Face)
     return save_Image
    
-def late_msg():
-    cv2.putText(frame, f'YOU ARE LATE!!', (left +5, bottom +25), font, 0.75, (0, 0, 255), 2)  
 
 def face_Frame_Visuals():
         cv2.rectangle(Verti, (left, top), (right, bottom), (55, 158, 58), 2)                    #Displays frame around detected face
@@ -63,19 +62,16 @@ def face_Frame_Visuals():
         cv2.putText(Verti,f'{confidence}', (left +3, bottom +8), font, 0.3, (255, 255, 255), 1) #Put distance above frame, split string to display as percentage. 
 
 clear_csv()
-clear_attendance()
 backup_live_img()         
 data = pickle.loads(open('encodings/face_enc', "rb").read())
 
-counterH = 0  
 while True: #Loop to start taking all the frameworks from the camera
-    counterH = counterH + 1 
     ret, frame = webcam.read()
 
-    frame_resize = cv2.resize(frame, (0, 0), fx=frameWidth, fy=frameHeight)     #Resizes frame by adjusting frame height and width.
-                                                                                #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
-                                                                                #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
-    rgb_frame = frame_resize[:, :, ::-1]                                        #convertframe to rgb
+    frame_resize = cv2.resize(frame, (0, 0), fx=frameWidth, fy=frameHeight)    #Resizes frame by adjusting frame height and width.
+                                                                           #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
+                                                                               #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
+    rgb_frame = frame_resize[:, :, ::-1]                        #convertframe to rgb
     
     Hori = np.concatenate((frame_resize, mainFrame), axis=1) 
     Bind = np.concatenate((Hori, subFrame), axis=1)   #Merge settings and webcam frame
@@ -108,18 +104,14 @@ while True: #Loop to start taking all the frameworks from the camera
             count = {}                                              #function gives you back two loop variables: The count of the current iteration, The value of the item at the current iteration
                                                                     #this will extract the matching indices. ?? Enumerate = listing of all of the elements of a set
                                                                     
-            if ( counterH % 20 == 0 ): 
-                counterH = 0 
-                for i in matchedIndxs: # loop over the matched indexes and maintain a count for each recognized face face
-                    name = data["names"][i] #Check the names at respective indexes we stored in matchedIdxs
-                    count[name] = count.get(name, 0) + 1 #increase count for the name we got
-                    name = max(count, key=count.get) #set name which has highest count
-                    #names.append(name) # will update the list of names
-            
+
+            for i in matchedIndxs: # loop over the matched indexes and maintain a count for each recognized face face
+                name = data["names"][i] #Check the names at respective indexes we stored in matchedIdxs
+                count[name] = count.get(name, 0) + 1 #increase count for the name we got
+                name = max(count, key=count.get) #set name which has highest count
 
 
         face_Frame_Visuals()
-        check_attendance(name)
 
         #resize_Face()
         #save_Data()
@@ -161,14 +153,28 @@ while True: #Loop to start taking all the frameworks from the camera
 
         #display data to data window
     cvui.checkbox(Verti, 510, 15, 'Display Present Students:', checked5)
+    cvui.checkbox(Verti, 615, 180, 'Clear roll', checkedx)
     curTime = datetime.now()
     currentTime = curTime.strftime('%H:%M:%S')
-    cvui.text(Verti, 100, 10, 'Current Time: ' + currentTime, 0.5, 0xcccccc)
+    curDate = date.today()
+    curDate = str(curDate)
+    cvui.text(Verti, 100, 10, 'Date: ' + curDate, 0.4, 0xcccccc)
+    cvui.text(Verti, 100, 23, 'Current Time: ' + currentTime, 0.4, 0xcccccc)
+
+    if checkedx == [True]:
+        checked5 = [False]
+        clear_csv()
+        cv2.putText(Verti, f'Roll cleared.', (510, 40), font, 0.3, (255, 255, 255), 1)
+    else:
+        pass
 
     if checked5 == [True]:
+        check_attendance(name)
         display(Verti, font)
     else:
         pass
+
+
     
     #Display Visual Info (Settings)
     cvui.checkbox(Verti, 10, 10, 'Pause', checked4)
