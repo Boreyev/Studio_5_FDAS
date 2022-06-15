@@ -12,6 +12,14 @@ from img_backup import backup_live_img
 from insert_attendance import check_attendance
 from display import display
 from clear_data import clear_csv
+from screeninfo import get_monitors
+
+#Get monitor dims
+for monitor in get_monitors():
+    mWidth = monitor.width
+    mHeight = monitor.height
+    print(str(mWidth) + 'x' + str(mHeight))
+
 #Window defs
 MAIN_WINDOW = 'FDAS'
 cvui.init(MAIN_WINDOW)
@@ -26,7 +34,12 @@ checked2 = [False]
 checked3 = [False]
 checked4 = [False]
 checked5 = [False]
+checked6 = [False]
+checked7 = [False]
+checked8 = [False]
 checkedx = [False]
+checkedy = [False]
+
 #TrackBar Value
 trackbarValue = [0.5] 
 frameWidth = 0.5
@@ -37,11 +50,8 @@ font = cv2.FONT_HERSHEY_SIMPLEX #font for all writing
 ptime = 0 #Time = 0
 
 padding = cv2.imread('GUI_Res/Padding.png')
-
-def resize_Face(): #Not in use as of now, work in progress 
-    img_Height = 100
-    img_Width = 80
-    img_Dim = img_Width, img_Height
+splash = cv2.imread("GUI_Res/FDAS-logos.jpeg")
+colour = 0xcccccc
 
 def save_Face():    #Each time face is detected, save image with name and confidence level
     for i in range(2):
@@ -131,11 +141,16 @@ while True: #Loop to start taking all the frameworks from the camera
         else:
             pass
 
-    #If Settiing box checked, resize frame to display settings
-    if checked3 == [True]:
-        cv2.resizeWindow(MAIN_WINDOW, 720, 210)
-    else:
-        cv2.resizeWindow(MAIN_WINDOW, 320, 210)
+    if checked5 == [False]:
+        cvui.image(Verti, 0, 0, splash)
+        cvui.checkbox(Verti, 240, 185, 'Start', checked5)
+    elif checked5 == [True]:
+        
+        #If Settiing box checked, resize frame to display settings
+        if (cvui.button(Verti, 275, 181, ">")):
+            cv2.resizeWindow(MAIN_WINDOW, 520, 210)
+        elif (cvui.button(Verti, 235, 181, "<")):
+            cv2.resizeWindow(MAIN_WINDOW, 320, 210)
 
     #If info box checked, display info
     if checked == [False]:
@@ -151,8 +166,26 @@ while True: #Loop to start taking all the frameworks from the camera
     else:
         pass
 
+        #Checkbox to change to alt theme 
+        if checked7==[True]:
+            mainFrame[:] = (133,138,126) #Alt / Green theme
+            padding = cv2.imread('GUI_Res/PaddingWhite.png')
+            colour = 0xF5E9EC
+        elif checked7==[False]:
+            mainFrame[:] = (64,64,64) #Standard theme
+            padding = cv2.imread('GUI_Res/Padding.png')
+            colour = 0xcccccc
+
+        if checked6==[True]:
+            cv2.rectangle(Verti,(130,45),(260,110),(64,64,64),-1)
+            cvui.text(Verti, 140, 60, 'Exit Application?', 0.3, colour)
+            if cvui.button(Verti, 135, 75, "Yes"):
+                break
+            elif cvui.button(Verti, 200, 75, "No"):
+                checked6==[False]
+
         #display data to data window
-    cvui.checkbox(Verti, 510, 15, 'Display Present Students:', checked5)
+    cvui.checkbox(Verti, 510, 15, 'Display Present Students:', checkedy)
     cvui.checkbox(Verti, 615, 180, 'Clear roll', checkedx)
     curTime = datetime.now()
     currentTime = curTime.strftime('%H:%M:%S')
@@ -162,13 +195,13 @@ while True: #Loop to start taking all the frameworks from the camera
     cvui.text(Verti, 100, 23, 'Current Time: ' + currentTime, 0.4, 0xcccccc)
 
     if checkedx == [True]:
-        checked5 = [False]
+        checkedy = [False]
         clear_csv()
         cv2.putText(Verti, f'Roll cleared.', (510, 40), font, 0.3, (255, 255, 255), 1)
     else:
         pass
 
-    if checked5 == [True]:
+    if checkedy == [True]:
         check_attendance(name)
         display(Verti, font)
     else:
@@ -178,13 +211,22 @@ while True: #Loop to start taking all the frameworks from the camera
     
     #Display Visual Info (Settings)
     cvui.checkbox(Verti, 10, 10, 'Pause', checked4)
-    cvui.checkbox(Verti, 210, 181, 'Settings', checked3)
+    #cvui.checkbox(Verti, 210, 181, 'Settings', checked3)
     cvui.text(Verti, 340, 5, 'Settings:', 0.6, 0xcccccc)
     cvui.checkbox(Verti, 335, 30, 'Save Data', checked2)
     cvui.checkbox(Verti, 335, 50, 'Hide Box', checked1)
     cvui.checkbox(Verti, 335, 70, 'Hide Information', checked)
     cvui.text(Verti, 360, 95, 'Tolerance Threshold:', 0.4, 0xcccccc)
     cvui.trackbar(Verti, 325, 110, 200, trackbarValue, 0.0, 1)
+
+
+    #Fullscreen functionality
+    if checked8==[True]:
+        cv2.resizeWindow(MAIN_WINDOW, mWidth, mHeight)
+        Verti = cv2.resize(Verti, dsize=(mWidth, mHeight), interpolation=cv2.INTER_CUBIC)
+
+    elif checked8==[False]:
+        pass
     
     cvui.update()   #Cvui needs to be updated before performing any cv2 actions
     cv2.imshow(MAIN_WINDOW, Verti)

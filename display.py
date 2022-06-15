@@ -6,7 +6,6 @@ import cv2
 from datetime import datetime, date
 import time
 import csv
-import pandas as pd
 from clear_data import clear_csv
 
 #Verti, font
