@@ -20,7 +20,7 @@ for monitor in get_monitors():
 #Window defs
 MAIN_WINDOW = 'FDAS'
 cvui.init(MAIN_WINDOW)
-mainFrame = np.zeros((180, 200, 3), np.uint8)   #Window dims
+mainFrame = np.zeros((720, 200, 3), np.uint8)   #Window dims
 mainFrame[:] = (64,64,64) #Standard theme
 
 #Checkbox states
@@ -41,14 +41,17 @@ frameHeight = 0.5
 
 #OpenCV variables
 webcam = cv2.VideoCapture(0) #Takes video from webcam
-webcam.set(cv2.CAP_PROP_FRAME_WIDTH, 640)   #Set cam dims for universal usage across different hardware
-webcam.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
+webcam.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)   #Set cam dims for universal usage across different hardware
+webcam.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 nFPS =  webcam.get(cv2.CAP_PROP_FPS)
 font = cv2.FONT_HERSHEY_SIMPLEX #Universal font
 ptime = 0 #Time = 0
-padding = cv2.imread('GUI_Res/Padding.png')
-splash = cv2.imread("GUI_Res/FDAS-logos.jpeg")
+padding = cv2.imread('GUI_Res/Padding.jpg')
+splash = cv2.imread("GUI_Res/FDAS-logos.jpg")
 colour = 0xcccccc
+
+#Change this if changing frame resize scale (i.e 0.25 = scale 4 )
+scale = 4
 
 def save_Face():    #Each time face is detected, save image with name and distance
     for i in range(5):
@@ -116,10 +119,10 @@ def attendance(name):
             add_attendance(name, arrival_time)
 
 def face_Frame_Visuals():
-        cv2.rectangle(Verti, (left, top), (right, bottom), (55, 158, 58), 2)                 #Displays frame around detected face
-        cv2.rectangle(Verti, (left, bottom +17), (right, bottom), (55, 158, 58), cv2.FILLED) #Displays box for name visibility
-        cv2.putText(Verti, name, (left +3, bottom +15), font, 0.3, (204, 204, 204), 1)        #Displays name
-        cv2.putText(Verti,distance_out[0:4], (left +3, bottom +8), font, 0.3, (204, 204, 204), 1) #Put distance above frame, split string to display as percentage. 
+        cv2.rectangle(Verti, (left*scale, top*scale), (right*scale, bottom*scale), (55, 158, 58), 3)                 #Displays frame around detected face
+        cv2.rectangle(Verti, (left*scale, bottom*scale +50), (right*scale, bottom*scale), (55, 158, 58), cv2.FILLED) #Displays box for name visibility
+        cv2.putText(Verti, name, (left*scale +3, bottom*scale +15), font, 0.7, (204, 204, 204), 1)        #Displays name
+        cv2.putText(Verti,distance_out[0:4], (left*scale + 3, bottom*scale +40), font, 0.7, (204, 204, 204), 1) #Put distance above frame, split string to display as percentage. 
 
 def save_encoding_Data(face_encoding):    #Outputs face detection data to text file
      lines = [str(face_encoding)]
@@ -152,12 +155,12 @@ known_encodings = encodings(images)
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
 
-    frame_resize = cv2.resize(frame, (0, 0), fx=.5, fy=.5)    #Resizes frame by adjusting frame height and width.
+    frame_resize = cv2.resize(frame, (0, 0), fx=.25, fy=.25)    #Resizes frame by adjusting frame height and width.
                                                                                #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
                                                                                #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
     rgb_frame = frame_resize[:, :, ::-1]                        #convertframe to rgb
 
-    Hori = np.concatenate((frame_resize, mainFrame), axis=1)    #Merge settings and webcam frame
+    Hori = np.concatenate((frame, mainFrame), axis=1)    #Merge settings and webcam frame
     Verti = np.concatenate((Hori, padding), axis=0)            #Add bottom padding
    
     face_locations = fr.face_locations(rgb_frame, model="hog")                  #check where faces are in the frame, uses hog model (faster but less accurate)
@@ -168,10 +171,6 @@ while True: #Loop to start taking all the frameworks from the camera
     fps= int(1/(ctime-ptime))
     ptime = ctime
 
-    for f in range(20):
-        if f==20:
-            f = 0
-       
     #Loop through each encoding in DB
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
         
@@ -208,20 +207,20 @@ while True: #Loop to start taking all the frameworks from the camera
 
     if checked5 == [False]:
         cvui.image(Verti, 0, 0, splash)
-        cvui.checkbox(Verti, 240, 185, 'Start', checked5)
+        cvui.checkbox(Verti, 720, 600, 'Start', checked5)
     elif checked5 == [True]:
         
         #If Settiing box checked, resize frame to display settings
-        if (cvui.button(Verti, 275, 181, ">")):
-            cv2.resizeWindow(MAIN_WINDOW, 520, 210)
-        elif (cvui.button(Verti, 235, 181, "<")):
-            cv2.resizeWindow(MAIN_WINDOW, 320, 210)
+        if (cvui.button(Verti, 310*scale, 182*scale, ">")):
+            cv2.resizeWindow(MAIN_WINDOW, 1480, 802)
+        elif (cvui.button(Verti, 300*scale, 182*scale, "<")):
+            cv2.resizeWindow(MAIN_WINDOW, 1285, 802)
 
         #If info box checked, display info
         if checked == [False]:
-            cvui.text(Verti, 5, 182, f'FPS:{fps}', 0.4, colour)
-            cvui.text(Verti, 70, 182, f'Number of faces: {numFaces}', 0.4, colour)
-            cvui.text(Verti, 5, 195, f'Last Detected: {name}. ', 0.4, colour)
+            cvui.text(Verti, 5*scale, 184*scale, f'FPS:{fps}', 1, colour)
+            cvui.text(Verti, 35*scale, 184*scale, f'Number of faces: {numFaces}', 1, colour)
+            cvui.text(Verti, 5*scale, 192*scale, f'Last Detected: {name}. ', 1, colour)
         else:
             pass
 
@@ -234,36 +233,38 @@ while True: #Loop to start taking all the frameworks from the camera
         #Checkbox to change to alt theme 
         if checked7==[True]:
             mainFrame[:] = (133,138,126) #Alt / Green theme
-            padding = cv2.imread('GUI_Res/PaddingWhite.png')
+            cv2.line(Verti, (0, 722), (1282, 722), (64,64,64), 5)
+            cv2.line(Verti, (1282, 0), (1282, 722), (64,64,64), 5)
+            padding = cv2.imread('GUI_Res/PaddingWhite.jpg')
             colour = 0xF5E9EC
         elif checked7==[False]:
             mainFrame[:] = (64,64,64) #Standard theme
-            padding = cv2.imread('GUI_Res/Padding.png')
+            cv2.line(Verti, (0, 722), (1282, 722), (133,138,126), 5)
+            cv2.line(Verti, (1282, 0), (1282, 722), (133,138,126), 5)
+            padding = cv2.imread('GUI_Res/Padding.jpg')
             colour = 0xcccccc
 
         if checked6==[True]:
-            cv2.rectangle(Verti,(130,45),(260,110),(64,64,64),-1)
-            cvui.text(Verti, 140, 60, 'Exit Application?', 0.3, colour)
-            if cvui.button(Verti, 135, 75, "Yes"):
+            cv2.rectangle(Verti,(520,90),(700,200),(64,64,64),-1)
+            cvui.text(Verti, 540, 120, 'Exit Application?', 0.5, colour)
+            if cvui.button(Verti, 540, 150, "Yes"):
                 break
-            elif cvui.button(Verti, 200, 75, "No"):
+            elif cvui.button(Verti, 620, 150, "No"):
                 checked6==[False]
 
-
-
         #Display Visual Info (Settings)
-        cvui.checkbox(Verti, 10, 10, 'Pause', checked4, colour)
         #cvui.checkbox(Verti, 210, 181, 'Settings', checked3)
-        cvui.checkbox(Verti, 335, 30, 'Save Data', checked2, colour)
-        cvui.checkbox(Verti, 335, 50, 'Hide Box', checked1, colour)
-        cvui.checkbox(Verti, 335, 70, 'Hide Information', checked, colour)
-        cvui.checkbox(Verti, 335, 90, 'Light Theme', checked7, colour)
-        cvui.checkbox(Verti, 10, 40, 'Fullscreen', checked8, colour)
+        cvui.checkbox(Verti, 325*scale, 40, 'Save Data', checked2, colour)
+        cvui.checkbox(Verti, 325*scale, 60, 'Hide Box', checked1, colour)
+        cvui.checkbox(Verti, 325*scale, 80, 'Hide Information', checked, colour)
+        cvui.checkbox(Verti, 325*scale, 100, 'Light Theme', checked7, colour)
         #Exit button, needs work
-        cvui.checkbox(Verti, 480, 0, 'X', checked6, colour)
-        cvui.trackbar(Verti, 325, 125, 200, trackbarValue, 0.0, 1)
-        cvui.text(Verti, 340, 5, 'Settings:', 0.6, colour)
-        cvui.text(Verti, 360, 115, 'Tolerance Threshold:', 0.4, colour)
+        cvui.checkbox(Verti, 1440, 5, 'X', checked6, colour)
+        cvui.trackbar(Verti, 325*scale, 140, 150, trackbarValue, 0.0, 1)
+        cvui.text(Verti, 322*scale, 5, 'Settings:', 1, colour)
+        cvui.text(Verti, 334*scale, 130, 'Tolerance:', 0.5, colour)
+        cvui.checkbox(Verti, 300*scale, 190*scale, 'Fullscreen', checked8, colour)
+        cvui.checkbox(Verti, 300*scale, 195*scale, 'Pause', checked4, colour)
 
     #Fullscreen functionality
     if checked8==[True]:
@@ -300,3 +301,20 @@ cv2.destroyAllWindows()
     #Pause functionality needs polishing
     #Need to increase efficiency on main for loop
     #Better documentation is required
+
+#Proposed efficiency solution
+"""
+frame_rate = 10
+prev = 0
+
+while capturing:
+
+    time_elapsed = time.time() - prev
+    res, image = webcam.read()
+
+    if time_elapsed > 1./frame_rate:
+        prev = time.time()
+
+        # Do something with your image here.
+        process_image()
+"""
