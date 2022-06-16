@@ -13,7 +13,7 @@ import pickle
 import cvui
 
 def check_attendance(name):
-    
+    randid = random.randint(5,15)
     curDate = date.today()
     curDate = str(curDate)
 
@@ -39,7 +39,7 @@ def check_attendance(name):
         id = student_id[1]
 
     if name == student_name[2]:
-        id = 0
+        id = randid
 
     with open('roll.csv', 'r+') as f: #r+ allows reading and writing
         attendanceData = f.readlines() #read all lines currently in data to avoid repeats
