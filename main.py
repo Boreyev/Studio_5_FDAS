@@ -4,12 +4,18 @@ from unicodedata import name
 import face_recognition as fr
 import numpy as np
 import cv2
-import os
-from datetime import datetime
-import sqlite3
+from datetime import datetime, date
+import pickle
 import cvui
-import cv2
 from screeninfo import get_monitors
+from save_data import save_encoding_Data, save_distances, save_Data
+from img_backup import backup_live_img
+from insert_attendance import check_attendance
+from display import display
+from clear_data import clear_csv
+#Window defs
+subFrame = np.zeros((720, 200, 3), np.uint8)
+subFrame[:] = (64, 64, 64)
 
 #Get monitor dims
 for monitor in get_monitors():
@@ -33,11 +39,12 @@ checked5 = [False]
 checked6 = [False]
 checked7 = [False]
 checked8 = [False]
-
+checked9 = [False]
+checked10 = [False]
 #TrackBar Value
 trackbarValue = [0.5] 
-frameWidth = 0.5
-frameHeight = 0.5
+frameWidth = 0.25
+frameHeight = 0.25
 
 #OpenCV variables
 webcam = cv2.VideoCapture(0) #Takes video from webcam
@@ -64,59 +71,7 @@ def save_Face():    #Each time face is detected, save image with name and distan
             save_Image = cv2.imwrite('live_dataset/'+name+'/'+name+str(i)+'.jpg',crop_Face) 
     return save_Image
 
-def resize_Face(): #Not in use as of now, work in progress 
-    img_Height = 100
-    img_Width = 80
-    img_Dim = img_Width, img_Height
-
-    for i in range(5):
-        if i==5:
-            i = 0
-        elif i == 0 or 1 or 2 or 3 or 4:
-            img_Name = cv2.imread("live_dataset/"+name+"/"+name+str(i)+'.jpg')
-            resize_Img = cv2.resize(img_Name, img_Dim, interpolation = cv2.INTER_AREA)
-            save_Img_Resize = cv2.imwrite("live_dataset/"+name+"/"+name+str(i)+'.jpg', resize_Img)
-    return save_Img_Resize
-    
-def save_Data():    #Outputs face detection data to text file
-    lines = [str(nTime) + '\n' + name + ': ' + str(distance_out)]
-    with open('test_data.txt', 'a') as f:
-        for line in lines:
-            f.write(line)
-            f.write('\n')
-            f.write('\n')
-
-def save_distances():    #Outputs face detection data to text file
-        lines = [str(name) + ' Detected: ' + str(nTime) + '\n' + 'Names: ' + str(img_names) + '\n' + 'Distances: ' + str(face_distances)]
-        with open('test_distances.txt', 'a') as f:
-            for line in lines:
-                f.write(line)
-                f.write('\n')
-                f.write('\n')
-
-def create_db():
-    connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
-    cursor = connection.cursor() #create cursor to interact with sql commands
-    cursor.execute("CREATE TABLE attendance(name string, datetime string)")
-    connection.commit()
-
-def add_attendance(name, arrival_time):
-    connection = sqlite3.connect('fdas.sqlite')
-    cursor = connection.cursor()
-    cursor.execute("insert into attendance values(?,?)", (name, arrival_time))
-
-def attendance(name):
-    with open('Attendance.csv', 'r+') as f: #r+ allows reading and writing
-        attendanceData = f.readlines() #read all lines currently in data to avoid repeats
-        roll = [] #empty list for all names that are found
-        for line in attendanceData: #goes through attendance.csv to check which students are present
-            entry = line.split(',') 
-            roll.append(entry[0]) 
-        if name not in roll: #if name is already not present...
-            curTime = datetime.now()
-            arrival_time = curTime.strftime('%H:%M:%S')
-            f.writelines(f'\n{name}, {arrival_time}') #enters name and time attendance is recorded
-            add_attendance(name, arrival_time)
+   
 
 def face_Frame_Visuals():
         cv2.rectangle(Verti, (left*scale, top*scale), (right*scale, bottom*scale), (55, 158, 58), 3)                 #Displays frame around detected face
@@ -124,44 +79,22 @@ def face_Frame_Visuals():
         cv2.putText(Verti, name, (left*scale +3, bottom*scale +15), font, 0.7, (204, 204, 204), 1)        #Displays name
         cv2.putText(Verti,distance_out[0:4], (left*scale + 3, bottom*scale +40), font, 0.7, (204, 204, 204), 1) #Put distance above frame, split string to display as percentage. 
 
-def save_encoding_Data(face_encoding):    #Outputs face detection data to text file
-     lines = [str(face_encoding)]
-     with open('encoding_data.txt', 'a') as f:
-         for line in lines:
-             f.write(line)
-             f.write('\n')
 
-def encodings(images):  #Documenting Required
-    list_of_encodings = []
-    for img in images:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        encode_img = fr.face_encodings(img)[0] #
-        list_of_encodings.append(encode_img)
-   
-    return list_of_encodings 
-
-path = "face_dataset"
-images = [] #list of all imgs we are importing
-img_names = [] #list of img names
-img_list = os.listdir(path) #returns list of img names with .jpg extension
-
-for img in img_list:
-    cur_img = cv2.imread(f'{path}/{img}')
-    images.append(cur_img)
-    img_names.append(os.path.splitext(img)[0]) #removes extension part of file
-    
-known_encodings = encodings(images)
+clear_csv()
+backup_live_img()         
+data = pickle.loads(open('encodings/face_enc', "rb").read())
 
 while True: #Loop to start taking all the frameworks from the camera
     ret, frame = webcam.read()
 
-    frame_resize = cv2.resize(frame, (0, 0), fx=.25, fy=.25)    #Resizes frame by adjusting frame height and width.
-                                                                               #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
+    frame_resize = cv2.resize(frame, (0, 0), fx=frameWidth, fy=frameHeight)    #Resizes frame by adjusting frame height and width.
+                                                                           #Note: Reduced frame scale results in faster frames but lower detection accuracy.  
                                                                                #This method is left at the default 1, It can be upscaled but is not recommended.                                             #This method is left at the default 1, It can be upscaled but is not recommended. 
     rgb_frame = frame_resize[:, :, ::-1]                        #convertframe to rgb
-
-    Hori = np.concatenate((frame, mainFrame), axis=1)    #Merge settings and webcam frame
-    Verti = np.concatenate((Hori, padding), axis=0)            #Add bottom padding
+    
+    Hori = np.concatenate((frame, mainFrame), axis=1) 
+    Bind = np.concatenate((Hori, subFrame), axis=1)   #Merge settings and webcam frame
+    Verti = np.concatenate((Bind, padding), axis=0)             #Add bottom padding
    
     face_locations = fr.face_locations(rgb_frame, model="hog")                  #check where faces are in the frame, uses hog model (faster but less accurate)
     face_encodings = fr.face_encodings(rgb_frame, face_locations, num_jitters=1, model=small)  #detects which faces are in the frame
@@ -175,21 +108,33 @@ while True: #Loop to start taking all the frameworks from the camera
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
         
         nTime = datetime.now().time()
-
-        matches = fr.compare_faces(known_encodings, face_encoding, tolerance=trackbarValue)
+        matches = fr.compare_faces(data["encodings"], face_encoding, tolerance=trackbarValue) #fix in test
+        faces_to_compare = [data["encodings"], face_encoding]
         name = "Unknown"
 
-        face_distances = fr.face_distance(known_encodings, face_encoding) #Compares face encodings and tells you how similar the faces are
+        face_distances = fr.face_distance(data["encodings"], face_encoding) #Compares face encodings and tells you how similar the faces are
         best_match_index = np.argmin(face_distances)                            #Most similar face_distance = the best match
 
         distance = min(face_distances)                                        #distance = minimum distance returned by face_distance list
         distance_out = str(distance)
 
-        if matches[best_match_index]:
-            name = img_names[best_match_index]
-    
-        attendance(name)
+        if True in matches: # check to see if we have found a match
+            matchedIndxs = [i for (i, b) in enumerate(matches) if b] #Find positions at which we get True and store them
+            count = {}                                              #function gives you back two loop variables: The count of the current iteration, The value of the item at the current iteration
+                                                                    #this will extract the matching indices. ?? Enumerate = listing of all of the elements of a set
+                                                                    
 
+            for i in matchedIndxs: # loop over the matched indexes and maintain a count for each recognized face face
+                name = data["names"][i] #Check the names at respective indexes we stored in matchedIdxs
+                count[name] = count.get(name, 0) + 1 #increase count for the name we got
+                name = max(count, key=count.get) #set name which has highest count
+
+
+        face_Frame_Visuals()
+
+        #resize_Face()
+        #save_Data()
+        cvui.context(MAIN_WINDOW)
         #If frame box checked, display face_frame visuals
         if checked1 == [False]:
             face_Frame_Visuals()
@@ -200,8 +145,8 @@ while True: #Loop to start taking all the frameworks from the camera
         if checked2 == [True]:
             save_encoding_Data(face_encoding)
             save_Face()
-            save_Data()
-            save_distances()
+            save_Data(nTime, name, distance_out)
+            save_distances(name, nTime, face_distances)
         else:
             pass
 
@@ -251,9 +196,30 @@ while True: #Loop to start taking all the frameworks from the camera
                 break
             elif cvui.button(Verti, 620, 150, "No"):
                 checked6==[False]
+        #display data to data window
+        if checked9 == [True]:
+            checked10 = [False]
+            clear_csv()
+            cv2.putText(Verti, f'Roll cleared.', (325*scale, 225), font, 0.3, (255, 255, 255), 1)
+        else:
+            pass
+
+        if checked10 == [True]:
+            check_attendance(name)
+            display(Verti, font, scale)
+        else:
+            pass
 
         #Display Visual Info (Settings)
         #cvui.checkbox(Verti, 210, 181, 'Settings', checked3)
+        curTime = datetime.now()
+        currentTime = curTime.strftime('%H:%M:%S')
+        curDate = date.today()
+        curDate = str(curDate)
+        cvui.checkbox(Verti, 325*scale, 200, 'Take Attendance:', checked10)
+        cvui.checkbox(Verti, 325*scale, 350, 'Clear roll', checked9)
+        cvui.text(Verti, 100, 10, 'Date: ' + curDate, 0.4, 0xcccccc)
+        cvui.text(Verti, 100, 23, 'Current Time: ' + currentTime, 0.4, 0xcccccc)
         cvui.checkbox(Verti, 325*scale, 40, 'Save Data', checked2, colour)
         cvui.checkbox(Verti, 325*scale, 60, 'Hide Box', checked1, colour)
         cvui.checkbox(Verti, 325*scale, 80, 'Hide Information', checked, colour)
@@ -274,9 +240,12 @@ while True: #Loop to start taking all the frameworks from the camera
     elif checked8==[False]:
         pass
 
+    #Display Visual Info (Settings)
+
 
     cvui.update()   #Cvui needs to be updated before performing any cv2 actions
-    cv2.imshow(MAIN_WINDOW, Verti) 
+    cv2.imshow(MAIN_WINDOW, Verti)
+
 
     #Destroy window if 'q' pressed. (Change to close on 'X' click)
     if cv2.waitKey(1) & 0xFF == ord('q'):
