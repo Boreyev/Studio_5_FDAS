@@ -1,15 +1,15 @@
 # Studio_5_FDAS
 Repository for the development of FDAS (Face Detection Attendance System).
 
-# Purpose
+## Purpose
 This system is designed to detect students faces to mark them down as present, late or absent for class.
 The purpose of the system is to automate the attendance taking process for tutors. Which will allow the allocation of more time for learning, and a decreased workload for tutors. 
 
-# Requirements
+## Requirements
 - Python
 - IDE 
 - USB 2.0 Webcam
-## Libraries
+### Libraries
 - numpy
 - face_recognition
 - opencv-python
@@ -17,7 +17,7 @@ The purpose of the system is to automate the attendance taking process for tutor
 - screeninfo
 - cmake
 
-# How to get app running:
+## How to get app running:
 ###### 1. open vs code terminal
 ctrl + shift + `
 ###### 2. create virtual env: 
