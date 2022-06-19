@@ -96,8 +96,8 @@ def add_face_dataset():
     path = "face_dataset"
     img_list = os.listdir(path) #returns list of img names with .jpg extension
     #n = random.randint(0,12345)
-    student_id = 101
-    img_id = 200
+    student_id = 1    
+    img_id = random.randint(0,10000)
     for img in img_list:
         cur_img = cv2.imread(f'{path}/{img}')
         connection.execute("insert into image values(?,?,?)", (img_id, student_id, cur_img))

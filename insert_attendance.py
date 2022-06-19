@@ -44,9 +44,10 @@ def check_attendance(name):
     with open('roll.csv', 'r+') as f: #r+ allows reading and writing
         attendanceData = f.readlines() #read all lines currently in data to avoid repeats
         roll = [] #empty list for all names that are found
+        line_count = 0
         for line in attendanceData: #goes through attendance.csv to check which students are present
             entry = line.split(',') 
-            roll.append(entry[0]) 
+            roll.append(entry[0])
         if name not in roll: #if name is already not present...
             curTime = datetime.now()
             arrival_time = curTime.strftime('%H:%M:%S')
@@ -93,7 +94,7 @@ def check_attendance(name):
             else:
                 classid = 0
                 arrival_status = 'LATE'
-
+            
             f.writelines(f'\n{name}, {arrival_time}, {arrival_status}') #enters name and time attendance is recorded
             connection.execute("insert into attendance values(?,?,?,?,?,?)", (classid, name, curDate, arrival_time, arrival_status, id))
             connection.commit()

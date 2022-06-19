@@ -11,6 +11,7 @@ import random
 
 def backup_live_img():
 
+    randid = random.randint(0,20)
     connection = sqlite3.connect('fdas.sqlite') #if database does not exist it will be created
     q1 = "select student_id from student"
     cur = connection.cursor()
@@ -39,9 +40,9 @@ def backup_live_img():
         if name == student_name[0]:
             student_id = student_id[0]
         elif name == student_name[1]:
-            student_id = 102
+            student_id = 2
         elif name == student_name[2]:
-            student_id = 103
+            student_id = randid
         img_list = os.listdir(fullpath)
         for img in img_list:
             cur_img = cv2.imread(f'{fullpath}/{img}')
