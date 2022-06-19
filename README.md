@@ -17,7 +17,7 @@ The purpose of the system is to automate the attendance taking process for tutor
 - screeninfo
 - cmake
 
-## How to get app running:
+## Installation
 ###### 1. open vs code terminal
 ctrl + shift + `
 ###### 2. create virtual env: 
@@ -45,7 +45,7 @@ pip install cvui
 pip install screeninfo
 ```
 
-### Note:
+### Note
 you may need to run
 ``` 
 pip install cmake 
