@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "create venv",
+        "type": "shell",
+        "command": "python -m venv venv;venv/scripts/activate",
+        "windows": {
+          "command": "python -m venv venv;venv/scripts/activate"
+        },
+        "presentation": {
+          "reveal": "always",
+          "panel": "new"
+        },
+        "runOptions": { "runOn": "folderOpen" }
+      }
+    ]
+  }
+  
