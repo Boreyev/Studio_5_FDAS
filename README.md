@@ -1,5 +1,8 @@
 # Studio_5_FDAS
-Repository for the development of FDAS (Face Detection Attendance System)
+Repository for the development of FDAS (Face Detection Attendance System).
+
+This system is designed to detect students faces to mark them down as present, late or absent for class.
+The purpose of the system is to automate the attendance taking process for tutors. Which will allow the allocation of more time for learning, and a decreased workload for tutors. 
 
 # How to get app running:
 ###### 1. open vs code terminal
