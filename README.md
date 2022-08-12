@@ -48,7 +48,7 @@ pip install screeninfo
 ```
 
 ### Note
-you may need to run
+You may need to run:
 ``` 
 pip install cmake 
 ```
